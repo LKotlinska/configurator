@@ -4,6 +4,7 @@
   font-weight: 500;
   margin: 0.5em 0;
   text-decoration: none;
+  width: max-content;
 }
 
 .underlineAnimation {
