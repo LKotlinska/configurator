@@ -1,0 +1,17 @@
+.accordion {
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  margin: 1em 0;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none; /* removes default marker in Firefox */
+}
+
+/* removes default marker in Chrome/Safari */
+.summary::-webkit-details-marker {
+  display: none;
+}
