@@ -1,0 +1,30 @@
+.link {
+  display: inline-block;
+  color: black;
+  font-weight: 500;
+  margin: 0.5em 0;
+  text-decoration: none;
+  width: max-content;
+}
+
+.underlineAnimation {
+  position: relative;
+}
+
+.underlineAnimation::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  background-color: black;
+  transition: transform 0.25s ease-out;
+  transform-origin: bottom right;
+}
+
+.underlineAnimation:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
