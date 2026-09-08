@@ -2,3 +2,8 @@
   padding: 5em;
   flex: 1;
 }
+
+.linkContainer {
+  display: flex;
+  flex-direction: column;
+}

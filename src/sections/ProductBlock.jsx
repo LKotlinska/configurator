@@ -25,16 +25,17 @@ export default function ProductBlock() {
             />
 
             <Button title="Add to cart"/>
-
-            <Link
-                title="Specifications & Downloads"
-            /> 
-            <Link
-                title="Upholstery"
-            />
-            <Link
-                title="Find in-store"
-            />
+            <div className={styles.linkContainer}>
+                <Link
+                    title="Specifications & Downloads"
+                /> 
+                <Link
+                    title="Upholstery"
+                />
+                <Link
+                    title="Find in-store"
+                />
+            </div>
         </section>
     )
 }
