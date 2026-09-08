@@ -1,12 +1,14 @@
-import { useState } from "react";
 import "./App.css";
+import ModelBlock from "./sections/ModelBlock";
+import ProductBlock from "./sections/ProductBlock";
 
 function App() {
   return (
     <>
-      <section>
-        <h1>This is the start page</h1>
-      </section>
+      <main className="divider">
+        <ModelBlock/>
+        <ProductBlock/>
+      </main>
     </>
   );
 }
