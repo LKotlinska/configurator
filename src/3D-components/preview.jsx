@@ -1,13 +1,16 @@
-// PREVIEW FOR CHAIR WITH LIGHT INCLUDED IN GLB
-
+// PREVIEW FOR BOTTLE
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 function Preview() {
   const containerRef = useRef(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const container = containerRef.current;
     if (!container) return;
 
