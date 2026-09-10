@@ -23,7 +23,7 @@ function Preview() {
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 1, 3);
+    camera.position.set(0, 1, 2);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -40,9 +40,10 @@ function Preview() {
     let model;
     const loader = new GLTFLoader();
     loader.load(
-      "/chair_preview_light.glb",
+      "/chair.glb",
       (gltf) => {
         model = gltf.scene;
+        console.log(model)
         scene.add(model);
       },
       undefined,
@@ -58,10 +59,22 @@ function Preview() {
       renderer.render(scene, camera);
     }
     animate();
+
+    // Keeps size in sync with the container
+    function handleResize() {
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+      if (!newWidth || !newHeight) return;
+
+      camera.aspect = newWidth / newHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(newWidth, newHeight);
+    }
+    window.addEventListener("resize", handleResize);
   }, []);
 
   return (
-    <article ref={containerRef} style={{ width: "50vw", height: "100vh" }} />
+    <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
 }
 
