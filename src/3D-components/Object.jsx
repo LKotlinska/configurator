@@ -62,18 +62,73 @@ function Chair() {
         console.log(chairBodyRef);
         const legsGroup = model.getObjectByName("bottom_leg_1");
         legsRef.current = legsGroup ? legsGroup.children : [];
-        
+
         scene.add(model);
 
-        // --------------- TEST!!! Toggle material to "Blue" ---------------
-        gltf.parser.getDependency("material", 0).then((blueMaterial) => {
-          model.traverse((obj) => {
-            if (obj.isMesh) {
-              obj.material = blueMaterial;
-            }
-          });
-        });
-        // ---------------  TEST END!!! ---------------
+        // --- Drag for rotation ---
+        // Static state
+        let isDragging = false;
+
+        // New start position in each drag
+        let previousPointer = { x: 0, y: 0 };
+
+        const raycaster = new THREE.Raycaster();
+        const pointerNDC = new THREE.Vector2();
+
+        function getPointerNDC(event) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        function onPointerDown(event) {
+          getPointerNDC(event);
+          raycaster.setFromCamera(pointerNDC, camera);
+          const intersects = raycaster.intersectObject(model, true);
+
+          if (intersects.length > 0) {
+            isDragging = true;
+            previousPointer.x = event.clientX;
+            previousPointer.y = event.clientY;
+          }
+        }
+
+        function onPointerMove(event) {
+          // Movement trigger
+          // Early break
+          if (!isDragging) return;
+
+          // Calculate distance of user interaction
+          const deltaX = event.clientX - previousPointer.x;
+          const deltaY = event.clientY - previousPointer.y;
+
+          model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
+          model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horisontal direction
+
+          previousPointer.x = event.clientX;
+          previousPointer.y = event.clientY;
+        }
+
+        function onPointerUp() {
+          // End movement
+          isDragging = false;
+        }
+
+        // Apply functions for rotation of object
+        renderer.domElement.addEventListener("pointerdown", onPointerDown);
+        renderer.domElement.addEventListener("pointermove", onPointerMove);
+        renderer.domElement.addEventListener("pointerup", onPointerUp);
+        renderer.domElement.addEventListener("pointerleave", onPointerUp);
+
+        // // --------------- TEST!!! Toggle material to "Blue" ---------------
+        // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
+        //   model.traverse((obj) => {
+        //     if (obj.isMesh) {
+        //       obj.material = blueMaterial;
+        //     }
+        //   });
+        // });
+        // // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
