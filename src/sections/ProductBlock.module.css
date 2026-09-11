@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 45vw;
+  width: var(--product-panel-width);
   height: 100vh;
   background-color: var(--color-main-bg);
   z-index: 100;
@@ -23,7 +23,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 45vw;
+  width: var(--product-panel-width);
   height: 100%;
   padding: 5em;
   box-sizing: border-box;

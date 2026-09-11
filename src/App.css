@@ -16,3 +16,23 @@ h6 {
 .divider {
   display: flex;
 }
+
+.content {
+  flex: 1.2;
+  min-width: 0;
+  padding-right: var(--product-panel-width);
+  box-sizing: border-box;
+  transition: padding-right 0.5s ease;
+  overflow: hidden;
+}
+
+.content--expanded {
+  padding-right: 0;
+}
+
+.content img {
+  min-width: 100%;
+  height: auto;
+  display: block;
+  transition: object-position 0.5s ease;
+}
