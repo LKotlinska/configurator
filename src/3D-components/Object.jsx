@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-function Chair() {
+function Object() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
@@ -46,7 +46,6 @@ function Chair() {
     scene.add(dir);
 
     // Loader
-
     const loader = new GLTFLoader();
     loader.load(
       "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
@@ -62,18 +61,89 @@ function Chair() {
         console.log(chairBodyRef);
         const legsGroup = model.getObjectByName("bottom_leg_1");
         legsRef.current = legsGroup ? legsGroup.children : [];
-        
+
         scene.add(model);
 
-        // --------------- TEST!!! Toggle material to "Blue" ---------------
-        gltf.parser.getDependency("material", 0).then((blueMaterial) => {
-          model.traverse((obj) => {
-            if (obj.isMesh) {
-              obj.material = blueMaterial;
-            }
-          });
-        });
-        // ---------------  TEST END!!! ---------------
+        // --- Drag for rotation ---
+        // States
+        let isDragging = false;
+        let isHovering = false;
+
+        // Save new position between each movement
+        let previousPointer = { x: 0, y: 0 };
+
+        const raycaster = new THREE.Raycaster();
+        const pointerNDC = new THREE.Vector2();
+
+        // Convert coordinates
+        function getPointerNDC(event) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+          pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        // Initiate movement
+        function onPointerDown(event) {
+          getPointerNDC(event);
+          raycaster.setFromCamera(pointerNDC, camera);
+          const intersects = raycaster.intersectObject(model, true);
+
+          if (intersects.length > 0) {
+            isDragging = true;
+            previousPointer.x = event.clientX;
+            previousPointer.y = event.clientY;
+          }
+        }
+
+        // Rotation of object + cursor check
+        function onPointerMove(event) {
+          if (isDragging) {
+            // Calculate distance of user interaction
+            const deltaX = event.clientX - previousPointer.x;
+            const deltaY = event.clientY - previousPointer.y;
+
+            model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
+            model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horizontal direction
+
+            previousPointer.x = event.clientX;
+            previousPointer.y = event.clientY;
+            return; // Don't check for hover while already dragging
+          }
+
+          // Hover-check. Hovering -> cursor pointer
+          getPointerNDC(event);
+          raycaster.setFromCamera(pointerNDC, camera);
+          const intersects = raycaster.intersectObject(model, true);
+
+          const nowHovering = intersects.length > 0;
+          if (nowHovering !== isHovering) {
+            isHovering = nowHovering;
+            renderer.domElement.style.cursor = isHovering
+              ? "pointer"
+              : "default";
+          }
+        }
+
+        function onPointerUp() {
+          // End movement
+          isDragging = false;
+        }
+
+        // Apply functions for rotation of object
+        renderer.domElement.addEventListener("pointerdown", onPointerDown);
+        renderer.domElement.addEventListener("pointermove", onPointerMove);
+        renderer.domElement.addEventListener("pointerup", onPointerUp);
+        renderer.domElement.addEventListener("pointerleave", onPointerUp);
+
+        // // --------------- TEST!!! Toggle material to "Blue" ---------------
+        // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
+        //   model.traverse((obj) => {
+        //     if (obj.isMesh) {
+        //       obj.material = blueMaterial;
+        //     }
+        //   });
+        // });
+        // // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
@@ -107,4 +177,4 @@ function Chair() {
   );
 }
 
-export default Chair;
+export default Object;
