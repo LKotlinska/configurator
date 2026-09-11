@@ -11,6 +11,7 @@ function App() {
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
           <ModelBlock/>
+          <img className={showConfig ? 'img--collapsed' : 'img--expanded'} src="./src/assets/test-img.webp"></img>
         </div>
         <ProductBlock showConfig={showConfig} onToggle={() => setShowConfig(!showConfig)}/>
       </main>
