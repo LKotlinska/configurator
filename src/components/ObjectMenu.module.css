@@ -1,0 +1,27 @@
+.objectMenu {
+  height: 24vh;
+  position: absolute;
+  bottom: 2vh;
+  left: 2vw;
+}
+
+.angleMenu,
+.rulerMenu,
+.screenMenu,
+.dimensionMenu {
+  height: 6vh;
+}
+
+.removeRuler {
+  border: 1px solid black;
+}
+
+article img {
+  height: 6vh;
+  /* display: none; */
+  /* Hide all, then show first of child */
+}
+
+article :first-child {
+  display: inline-block;
+}
