@@ -7,6 +7,13 @@ function Preview() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
+  // Model parts, exposed outside the effect via refs
+  const modelRef = useRef(null);
+  const armFrameRef = useRef(null);
+  const armCushionRef = useRef(null);
+  const chairBodyRef = useRef(null);
+  const legsRef = useRef([]);
+
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -20,6 +27,7 @@ function Preview() {
 
     // Create scene
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xD3D3D3 );
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -37,13 +45,19 @@ function Preview() {
     scene.add(dir);
 
     // Loader
-    let model;
     const loader = new GLTFLoader();
     loader.load(
       "/chair.glb",
       (gltf) => {
-        model = gltf.scene;
-        console.log(model)
+        const model = gltf.scene;
+        modelRef.current = model;
+        armFrameRef.current = model.getObjectByName('arm_frame');
+        armCushionRef.current = model.getObjectByName('arm_cushion');
+        chairBodyRef.current = model.getObjectByName('body');
+        console.log(chairBodyRef)
+        const legsGroup = model.getObjectByName('bottom_leg_1');
+        legsRef.current = legsGroup ? legsGroup.children : [];
+
         scene.add(model);
       },
       undefined,
