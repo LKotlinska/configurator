@@ -2,4 +2,12 @@
   flex: 1.2;
   min-width: 0;
   background-color: beige;
+  position: relative;
+}
+
+.rotationIcon {
+  position: absolute;
+  bottom: 2%;
+  right: 5%;
+  width: 4vw;
 }
