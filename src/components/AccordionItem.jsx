@@ -4,7 +4,7 @@ export default function AccordionItem({ title, children }) {
     return(
         <details className={styles.accordion}>
             <summary className={styles.summary}>
-                {title}
+                <span className={styles.title}>{title}</span>
                 <span aria-hidden='true' className="material-symbols-outlined">stat_minus_1</span>
             </summary>
             <div className={styles.content}>{children}

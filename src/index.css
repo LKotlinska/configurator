@@ -1,0 +1,18 @@
+:root {
+  --color-main-bg: #ffffff;
+  --color-button: #2d2f22;
+
+  --color-font-base: #000000;
+  --color-font-heading: #000000;
+
+  --font-family-base: "Cormorant", serif;
+  --font-family-heading: "Cormorant", serif;
+
+  --font-size-xs: 0.6em;
+  --font-size-sm: 0.9em;
+  --font-size-base: 1em;
+  --font-size-lg: 1.2em;
+  --font-size-xl: 1.4em;
+  --font-size-2xl: 2em;
+  --font-size-3xl: 3em;
+}

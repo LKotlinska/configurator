@@ -6,10 +6,10 @@ import styles from "./ProductBlock.module.css"
 export default function ProductBlock() {
     return(
         <section className={styles.productSection}>
-            <span>Configurator</span>
-            <h2>Elegant Armchair</h2>
+            <span className={styles.caption}>Configurator</span>
+            <h2 className={styles.modelTitle}>Elegant Armchair</h2>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            <span>2 799 £</span>
+            <span className={styles.priceTag}>2 799 £</span>
 
             <AccordionItem 
                 title="Armrest"
@@ -23,6 +23,11 @@ export default function ProductBlock() {
             <AccordionItem 
                 title="Colour"
             />
+
+            <div className={styles.statusContainer}>
+                <span className={styles.status}>In stock</span>
+                <span className={styles.status}>Delievery in 1-3 weeks</span>
+            </div>
 
             <Button title="Add to cart"/>
             <div className={styles.linkContainer}>

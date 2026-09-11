@@ -3,7 +3,40 @@
   flex: 1;
 }
 
+.caption {
+  text-transform: uppercase;
+}
+
 .linkContainer {
   display: flex;
   flex-direction: column;
 }
+
+.modelTitle {
+  font-size: var(--font-size-3xl);
+  margin: 0.2em 0;
+}
+
+.priceTag {
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+}
+
+.statusContainer {
+  display: flex;
+  margin: 1.5em 0 0.5em;
+}
+
+/* -- Separators for status */
+.status:first-child {
+  padding-right: 1em;
+}
+
+.status:not(:first-child) {
+  padding: 0 1em;
+}
+
+.status:not(:last-child) {
+  border-right: 1px solid var(--color-font-base);
+}
+/* -- Separators end */
