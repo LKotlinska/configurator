@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-function Chair() {
+function Object() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
@@ -177,4 +177,4 @@ function Chair() {
   );
 }
 
-export default Chair;
+export default Object;
