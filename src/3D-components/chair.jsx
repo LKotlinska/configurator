@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -7,9 +7,11 @@ function Chair() {
   const initialized = useRef(false);
 
   useEffect(() => {
+    // Solved double rendering
     if (initialized.current) return;
     initialized.current = true;
 
+    // Early break
     const container = containerRef.current;
     if (!container) return;
 
@@ -36,17 +38,17 @@ function Chair() {
     scene.add(dir);
 
     // Loader
-    let model;
+
     const loader = new GLTFLoader();
     loader.load(
-      "/chairTest2.glb",
+      "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
       //   "/chair-v3.glb",
       (gltf) => {
         // console.log(gltf);
-        model = gltf.scene;
+        const model = gltf.scene;
         scene.add(model);
 
-        // TEST!!! Toggle material to "Blue"
+        // --------------- TEST!!! Toggle material to "Blue" ---------------
         gltf.parser.getDependency("material", 0).then((blueMaterial) => {
           model.traverse((obj) => {
             if (obj.isMesh) {
@@ -54,55 +56,7 @@ function Chair() {
             }
           });
         });
-        // TEST END!!!
-
-        const textures = [];
-
-        // --- TRAVERSE ---
-        model.traverse((obj) => {
-          // Unpack textures
-          if (!obj.isMesh && !obj.material) return;
-
-          const mat = obj.material;
-
-          ["map", "normalMap", "roughnessMap", "metalnessMap"].forEach(
-            (key) => {
-              const tex = mat[key];
-              if (tex && tex.isTexture) {
-                textures.push({
-                  mesh: obj.name,
-                  material: mat.name,
-                  type: key,
-                  textureName: tex.name,
-                  uuid: tex.uuid,
-                });
-              }
-            },
-          );
-        });
-
-        // Traverse to see all materials
-        const allMaterials = new Set();
-        model.traverse((obj) => {
-          if (obj.isMesh && obj.material) {
-            allMaterials.add(obj.material);
-          }
-        });
-        console.log(
-          "RAW MATERIALS IN FILE:",
-          JSON.stringify(gltf.parser.json.materials, null, 2),
-        );
-        console.log("EXTENSIONS USED:", gltf.parser.json.extensionsUsed);
-        console.log(
-          "MESHES:",
-          JSON.stringify(gltf.parser.json.meshes, null, 2),
-        );
-
-        console.log("Extensions used:", gltf.parser.json.extensionsUsed);
-        console.log(
-          "Variants ext:",
-          gltf.userData.gltfExtensions?.["KHR_materials_variants"],
-        );
+        // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
