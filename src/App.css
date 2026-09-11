@@ -4,4 +4,5 @@ body {
 
 .divider {
   display: flex;
+  position: relative;
 }
