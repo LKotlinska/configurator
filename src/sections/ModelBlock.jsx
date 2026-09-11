@@ -1,6 +1,6 @@
 import styles from "./ModelBlock.module.css";
 import Preview from "../3D-components/preview";
-import Chair from "../3D-components/chair";
+import Chair from "../3D-components/Chair";
 
 export default function ModelBlock() {
   return (
