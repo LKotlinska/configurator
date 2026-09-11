@@ -1,11 +1,16 @@
 .productSection {
-  flex: 0 0 45vw;
-  position: relative;
-  transition: flex-basis 0.5s ease;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 45vw;
+  height: 100vh;
+  background-color: var(--color-main-bg);
+  z-index: 100;
+  transition: width 0.5s ease;
 }
 
 .productSection.collapsed {
-  flex-basis: 0;
+  width: 0;
 }
 
 .clipper {
@@ -22,6 +27,8 @@
   height: 100%;
   padding: 5em;
   box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: transform 0.5s ease;
 }
 
