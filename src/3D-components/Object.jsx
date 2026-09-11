@@ -1,9 +1,8 @@
-// PREVIEW FOR BOTTLE
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-function Preview() {
+function Chair() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
@@ -15,9 +14,11 @@ function Preview() {
   const legsRef = useRef([]);
 
   useEffect(() => {
+    // Solved double rendering
     if (initialized.current) return;
     initialized.current = true;
 
+    // Early break
     const container = containerRef.current;
     if (!container) return;
 
@@ -27,11 +28,11 @@ function Preview() {
 
     // Create scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xD3D3D3 );
+    scene.background = new THREE.Color(0xd3d3d3);
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 1, 2);
+    camera.position.set(0, 1, 3);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -45,20 +46,34 @@ function Preview() {
     scene.add(dir);
 
     // Loader
+
     const loader = new GLTFLoader();
     loader.load(
-      "/chair.glb",
+      "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
+      //   "/chair-v3.glb",
       (gltf) => {
+        // console.log(gltf);
         const model = gltf.scene;
-        modelRef.current = model;
-        armFrameRef.current = model.getObjectByName('arm_frame');
-        armCushionRef.current = model.getObjectByName('arm_cushion');
-        chairBodyRef.current = model.getObjectByName('body');
-        console.log(chairBodyRef)
-        const legsGroup = model.getObjectByName('bottom_leg_1');
-        legsRef.current = legsGroup ? legsGroup.children : [];
 
+        modelRef.current = model;
+        armFrameRef.current = model.getObjectByName("arm_frame");
+        armCushionRef.current = model.getObjectByName("arm_cushion");
+        chairBodyRef.current = model.getObjectByName("body");
+        console.log(chairBodyRef);
+        const legsGroup = model.getObjectByName("bottom_leg_1");
+        legsRef.current = legsGroup ? legsGroup.children : [];
+        
         scene.add(model);
+
+        // --------------- TEST!!! Toggle material to "Blue" ---------------
+        gltf.parser.getDependency("material", 0).then((blueMaterial) => {
+          model.traverse((obj) => {
+            if (obj.isMesh) {
+              obj.material = blueMaterial;
+            }
+          });
+        });
+        // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
@@ -97,4 +112,4 @@ function Preview() {
   );
 }
 
-export default Preview;
+export default Chair;
