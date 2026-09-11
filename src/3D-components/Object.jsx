@@ -46,7 +46,6 @@ function Chair() {
     scene.add(dir);
 
     // Loader
-
     const loader = new GLTFLoader();
     loader.load(
       "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
@@ -66,21 +65,24 @@ function Chair() {
         scene.add(model);
 
         // --- Drag for rotation ---
-        // Static state
+        // States
         let isDragging = false;
+        let isHovering = false;
 
-        // New start position in each drag
+        // Save new position between each movement
         let previousPointer = { x: 0, y: 0 };
 
         const raycaster = new THREE.Raycaster();
         const pointerNDC = new THREE.Vector2();
 
+        // Convert coordinates
         function getPointerNDC(event) {
           const rect = renderer.domElement.getBoundingClientRect();
           pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
           pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         }
 
+        // Initiate movement
         function onPointerDown(event) {
           getPointerNDC(event);
           raycaster.setFromCamera(pointerNDC, camera);
@@ -93,20 +95,33 @@ function Chair() {
           }
         }
 
+        // Rotation of object + cursor check
         function onPointerMove(event) {
-          // Movement trigger
-          // Early break
-          if (!isDragging) return;
+          if (isDragging) {
+            // Calculate distance of user interaction
+            const deltaX = event.clientX - previousPointer.x;
+            const deltaY = event.clientY - previousPointer.y;
 
-          // Calculate distance of user interaction
-          const deltaX = event.clientX - previousPointer.x;
-          const deltaY = event.clientY - previousPointer.y;
+            model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
+            model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horizontal direction
 
-          model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
-          model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horisontal direction
+            previousPointer.x = event.clientX;
+            previousPointer.y = event.clientY;
+            return; // Don't check for hover while already dragging
+          }
 
-          previousPointer.x = event.clientX;
-          previousPointer.y = event.clientY;
+          // Hover-check. Hovering -> cursor pointer
+          getPointerNDC(event);
+          raycaster.setFromCamera(pointerNDC, camera);
+          const intersects = raycaster.intersectObject(model, true);
+
+          const nowHovering = intersects.length > 0;
+          if (nowHovering !== isHovering) {
+            isHovering = nowHovering;
+            renderer.domElement.style.cursor = isHovering
+              ? "pointer"
+              : "default";
+          }
         }
 
         function onPointerUp() {
