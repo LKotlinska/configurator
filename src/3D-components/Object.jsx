@@ -6,6 +6,13 @@ function Chair() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
+  // Model parts, exposed outside the effect via refs
+  const modelRef = useRef(null);
+  const armFrameRef = useRef(null);
+  const armCushionRef = useRef(null);
+  const chairBodyRef = useRef(null);
+  const legsRef = useRef([]);
+
   useEffect(() => {
     // Solved double rendering
     if (initialized.current) return;
@@ -21,6 +28,7 @@ function Chair() {
 
     // Create scene
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xd3d3d3);
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -46,6 +54,15 @@ function Chair() {
       (gltf) => {
         // console.log(gltf);
         const model = gltf.scene;
+
+        modelRef.current = model;
+        armFrameRef.current = model.getObjectByName("arm_frame");
+        armCushionRef.current = model.getObjectByName("arm_cushion");
+        chairBodyRef.current = model.getObjectByName("body");
+        console.log(chairBodyRef);
+        const legsGroup = model.getObjectByName("bottom_leg_1");
+        legsRef.current = legsGroup ? legsGroup.children : [];
+        
         scene.add(model);
 
         // --------------- TEST!!! Toggle material to "Blue" ---------------
@@ -71,10 +88,22 @@ function Chair() {
       renderer.render(scene, camera);
     }
     animate();
+
+    // Keeps size in sync with the container
+    function handleResize() {
+      const newWidth = container.clientWidth;
+      const newHeight = container.clientHeight;
+      if (!newWidth || !newHeight) return;
+
+      camera.aspect = newWidth / newHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(newWidth, newHeight);
+    }
+    window.addEventListener("resize", handleResize);
   }, []);
 
   return (
-    <article ref={containerRef} style={{ width: "50vw", height: "100vh" }} />
+    <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
 }
 
