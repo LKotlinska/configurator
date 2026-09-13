@@ -1,7 +1,7 @@
 import styles from "./ObjectMenu.module.css";
 import { useState } from "react";
 
-export default function ObjectMenu() {
+export default function ObjectMenu({ onAngleSelect }) {
   const [showAngles, setShowAngles] = useState(false);
   const [showRuler, setShowRuler] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -22,9 +22,21 @@ export default function ObjectMenu() {
 
         {showAngles && (
           <>
-            <img src="/icons/angle1.png" className={styles.angle1} />
-            <img src="/icons/angle2.png" className={styles.angle2} />
-            <img src="/icons/angle3.png" className={styles.angle3} />
+            <img
+              src="/icons/angle1.png"
+              className={styles.angle1}
+              onClick={() => onAngleSelect?.("angle1")}
+            />
+            <img
+              src="/icons/angle2.png"
+              className={styles.angle2}
+              onClick={() => onAngleSelect?.("angle2")}
+            />
+            <img
+              src="/icons/angle3.png"
+              className={styles.angle3}
+              onClick={() => onAngleSelect?.("angle3")}
+            />
           </>
         )}
       </article>

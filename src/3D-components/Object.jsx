@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-function Object() {
+const Object = forwardRef(function Object(props, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
@@ -16,6 +22,12 @@ function Object() {
 
   // Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
+
+  // Exposes goToPreset(key) to whichever parent holds a ref to this component,
+  // e.g. <Object ref={objectRef} /> then objectRef.current.goToPreset("angle1")
+  useImperativeHandle(ref, () => ({
+    goToPreset: (key) => goToPresetRef.current?.(key),
+  }));
 
   useEffect(() => {
     // Solved double rendering
@@ -291,6 +303,6 @@ function Object() {
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
-}
+});
 
 export default Object;
