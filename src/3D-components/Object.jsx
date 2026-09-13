@@ -68,7 +68,7 @@ const Object = forwardRef(function Object(props, ref) {
     controls.enableZoom = true; // zoom handled by OrbitControls
     controls.enablePan = false; // don't let the user pan the object away
     controls.minDistance = 1.5; // zoom limit
-    controls.maxDistance = 6; // zoom limit
+    controls.maxDistance = 3; // zoom limit
     controls.target.set(0, 0, 0);
     controls.update();
 
@@ -172,8 +172,8 @@ const Object = forwardRef(function Object(props, ref) {
     // Loader
     const loader = new GLTFLoader();
     loader.load(
-      "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
-      //   "/chair-v3.glb",
+      // "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
+      "/chair.glb",
       (gltf) => {
         // console.log(gltf);
         const model = gltf.scene;

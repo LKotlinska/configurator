@@ -64,7 +64,7 @@ export default function ObjectMenu({ onAngleSelect }) {
       <article className={styles.screenMenu}>
         {!isFullscreen && (
           <img
-            src="/icons/openFullscreen.png"
+            src="/icons/openFullscreen2.png"
             className={styles.openFullscreen}
             onClick={() => setIsFullscreen(true)}
           />
@@ -72,7 +72,7 @@ export default function ObjectMenu({ onAngleSelect }) {
 
         {isFullscreen && (
           <img
-            src="/icons/closeFullscreen.png"
+            src="/icons/closeFullscreen2.png"
             className={styles.closeFullscreen}
             onClick={() => setIsFullscreen(false)}
           />
