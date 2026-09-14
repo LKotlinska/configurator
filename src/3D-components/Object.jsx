@@ -3,17 +3,36 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { CHAIR_URL } from "../config/models";
 
-function Chair({ variant } ) {
+// Object names as they exist in chair.glb, keyed by variant (see model description).
+const CHAIR_PARTS = {
+  ES104: {
+    root: "Chair_ES104_Root",
+    base: "01_Base_metal_W_wheels_ES104",
+    standardArmrest: "02_Armrest_Metal_ES104",
+    singleArmrest: "03_Singel_Armrest_ES104",
+    noArmrest: "04_Singel_NOarmrest_ES104",
+    body: "05_Body_ES104",
+    standardCushion: "06_Metal_Cushion_ES104",
+    singleCushion: "07_Singel_Cushion_ES104",
+  },
+  ES108: {
+    root: "Chair_ES108_Root",
+    base: "01_Base_metal_ES108",
+    standardArmrest: "02_Armrest_Metal_ES108",
+    singleArmrest: "03_Singel_Armrest_ES108",
+    noArmrest: "04_Singel_NOarmrest_ES108",
+    body: "05_Body_ES108",
+    standardCushion: "06_Metal_Cushion_ES108",
+    singleCushion: "07_Singel_Cushion_ES108",
+  },
+};
+
+function Chair({ variant, armrestOption = "standard" }) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
-  // Model parts, exposed outside the effect via refs
-  const model_104 = useRef(null);
-  const model_108 = useRef(null);
-  const armFrameRef = useRef(null);
-  const armCushionRef = useRef(null);
-  const chairBodyRef = useRef(null);
-  const legsRef = useRef([]);
+  // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
+  const partsRef = useRef({});
 
   const [loaded, setLoaded] = useState(false);
 
@@ -56,29 +75,19 @@ function Chair({ variant } ) {
       CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
         const model = gltf.scene;
-        // Main models
-        model_104.current = model.getObjectByName("Chair_ES104_Root");
-        model_108.current = model.getObjectByName("Chair_ES108_Root");
 
-        armFrameRef.current = model.getObjectByName("arm_frame");
-        armCushionRef.current = model.getObjectByName("arm_cushion");
-        chairBodyRef.current = model.getObjectByName("body");
-
-        const legsGroup = model.getObjectByName("bottom_leg_1");
-        legsRef.current = legsGroup ? legsGroup.children : [];
+        // Resolve every named part for every variant from CHAIR_PARTS.
+        for (const [variantKey, partNames] of Object.entries(CHAIR_PARTS)) {
+          const parts = {};
+          for (const [partKey, objectName] of Object.entries(partNames)) {
+            parts[partKey] = model.getObjectByName(objectName);
+          }
+          partsRef.current[variantKey] = parts;
+        }
 
         scene.add(model);
         setLoaded(true);
 
-        // --------------- TEST!!! Toggle material to "Blue" ---------------
-        gltf.parser.getDependency("material", 0).then((blueMaterial) => {
-          model.traverse((obj) => {
-            if (obj.isMesh) {
-              obj.material = blueMaterial;
-            }
-          });
-        });
-        // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
@@ -112,12 +121,25 @@ function Chair({ variant } ) {
     resizeObserver.observe(container);
   }, []);
 
-  // Listens to viariant prop for changes, and re-applies once the model finishes loading
+  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
   useEffect(() => {
-    if (!model_104.current || !model_108.current) return;
-    model_104.current.visible = variant === "ES104";
-    model_108.current.visible = variant === "ES108";
-  }, [variant, loaded]);
+    if (!loaded) return;
+
+    for (const [variantKey, parts] of Object.entries(partsRef.current)) {
+      const isActiveVariant = variantKey === variant;
+      parts.root.visible = isActiveVariant;
+      if (!isActiveVariant) continue;
+
+      parts.standardArmrest.visible = armrestOption === "standard";
+      parts.singleArmrest.visible = armrestOption === "single";
+      parts.noArmrest.visible = armrestOption === "none";
+
+      // Cushion height depends on the armrest variant (see model.md):
+      // the single cushion pairs with both the single-armrest and no-armrest looks.
+      parts.standardCushion.visible = armrestOption === "standard";
+      parts.singleCushion.visible = armrestOption !== "standard";
+    }
+  }, [variant, armrestOption, loaded]);
 
 
   return (
