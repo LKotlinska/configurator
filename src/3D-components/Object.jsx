@@ -13,7 +13,8 @@ import { createDimension } from "./createDimension";
 const Object = forwardRef(function Object(props, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
-  const dimensionPlatesRef = useRef({});
+  const dimensionPlatesRef = useRef([]);
+  const rulerMeshesRef = useRef([]);
 
   // Model parts, exposed outside the effect via refs
   const modelRef = useRef(null);
@@ -28,6 +29,14 @@ const Object = forwardRef(function Object(props, ref) {
   // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
+    setRulerVisible: (visible) => {
+      rulerMeshesRef.current.forEach((mesh) => {
+        mesh.visible = visible;
+      });
+      dimensionPlatesRef.current.forEach((plate) => {
+        plate.group.visible = visible;
+      });
+    },
   }));
 
   useEffect(() => {
@@ -218,11 +227,19 @@ const Object = forwardRef(function Object(props, ref) {
         scene.add(plateWidth104.group);
         scene.add(plateHeight104.group);
 
-        dimensionPlatesRef.current = {
+        dimensionPlatesRef.current = [
           plateDepth104,
           plateWidth104,
           plateHeight104,
-        };
+        ];
+
+        // Hide lines and measure (default)
+        rulerMeshesRef.current = [linjal104].filter(Boolean);
+
+        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
+        plateDepth104.group.visible = false;
+        plateWidth104.group.visible = false;
+        plateHeight104.group.visible = false;
 
         // --------------- TEST END!!! DIMENSIONS ---------------
 
@@ -250,11 +267,13 @@ const Object = forwardRef(function Object(props, ref) {
       updateLight();
 
       // Append dimension plates
-      const { plateDepth104, plateWidth104, plateHeight104 } =
-        dimensionPlatesRef.current;
-      plateDepth104?.update(camera);
-      plateWidth104?.update(camera);
-      plateHeight104?.update(camera);
+      // const { plateDepth104, plateWidth104, plateHeight104 } =
+      //   dimensionPlatesRef.current;
+      // plateDepth104?.update(camera);
+      // plateWidth104?.update(camera);
+      // plateHeight104?.update(camera);
+      const plates = dimensionPlatesRef.current;
+      plates.forEach((plate) => plate.update(camera));
 
       renderer.render(scene, camera);
     }

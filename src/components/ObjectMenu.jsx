@@ -1,12 +1,27 @@
 import styles from "./ObjectMenu.module.css";
 import { useState } from "react";
 
-export default function ObjectMenu({ onAngleSelect, showConfig, onToggle }) {
+export default function ObjectMenu({
+  onAngleSelect,
+  showConfig,
+  onToggle,
+  onRulerToggle,
+}) {
   const [showAngles, setShowAngles] = useState(false);
   const [showRuler, setShowRuler] = useState(false);
 
   function toggleAngles() {
     setShowAngles((prev) => !prev);
+  }
+
+  function handleShowRuler() {
+    setShowRuler(true);
+    onRulerToggle?.(true);
+  }
+
+  function handleHideRuler() {
+    setShowRuler(false);
+    onRulerToggle?.(false);
   }
 
   return (
@@ -46,7 +61,7 @@ export default function ObjectMenu({ onAngleSelect, showConfig, onToggle }) {
           <img
             src="/icons/showRuler.png"
             className={styles.showRuler}
-            onClick={() => setShowRuler(true)}
+            onClick={handleShowRuler}
           />
         )}
 
@@ -54,7 +69,7 @@ export default function ObjectMenu({ onAngleSelect, showConfig, onToggle }) {
           <img
             src="/icons/removeRuler.png"
             className={styles.removeRuler}
-            onClick={() => setShowRuler(false)}
+            onClick={handleHideRuler}
           />
         )}
       </article>

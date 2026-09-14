@@ -10,6 +10,10 @@ export default function ModelBlock({ showConfig, onToggle }) {
     chairRef.current?.goToPreset(key);
   }
 
+  function toggleRuler(visible) {
+    chairRef.current?.setRulerVisible(visible);
+  }
+
   return (
     <section className={styles.modelBlock}>
       <h2>3d model will be displayed here</h2>
@@ -17,6 +21,7 @@ export default function ModelBlock({ showConfig, onToggle }) {
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}
+        onRulerToggle={toggleRuler}
         showConfig={showConfig}
         onToggle={onToggle}
       />
