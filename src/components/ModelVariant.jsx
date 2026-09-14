@@ -1,6 +1,6 @@
 import styles from './ModelVariant.module.css'
-import preview104 from '../assets/models/preview_104.jpg'
-import preview108 from '../assets/models/preview_108.jpg'
+import preview104 from '../assets/previews/preview_ES104.jpg'
+import preview108 from '../assets/previews/preview_ES108.jpg'
 
 export default function ModelVariant({ variant, onChange }) {
     return (
