@@ -4,3 +4,8 @@ node_modules/
 .agents
 skills-lock.json
 chair.glb
+.env.development.local
+.env.local
+.vercel/repo.json
+*:Zone.Identifier
+src/3D-components/model.md
