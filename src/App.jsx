@@ -10,7 +10,7 @@ function App() {
     <>
       <main className="divider">
         <ModelBlock variant={variant} />
-        <ProductBlock />
+        <ProductBlock variant={variant} onVariantChange={setVariant} />
         <Navigator />
       </main>
     </>
