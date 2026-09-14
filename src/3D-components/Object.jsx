@@ -8,11 +8,14 @@ import {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createDimension } from "./createDimension";
 import { CHAIR_URL } from "../config/models";
 
 const Object = forwardRef(function Object({ variant }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
+  const dimensionPlatesRef = useRef([]);
+  const rulerMeshesRef = useRef([]);
 
   // Model parts, exposed outside the effect via refs
   const modelRef = useRef(null);
@@ -27,10 +30,17 @@ const Object = forwardRef(function Object({ variant }, ref) {
 // Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
-  // Exposes goToPreset(key) to whichever parent holds a ref to this component,
-  // e.g. <Object ref={objectRef} /> then objectRef.current.goToPreset("angle1")
+  // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
+    setRulerVisible: (visible) => {
+      rulerMeshesRef.current.forEach((mesh) => {
+        mesh.visible = visible;
+      });
+      dimensionPlatesRef.current.forEach((plate) => {
+        plate.group.visible = visible;
+      });
+    },
   }));
 
   useEffect(() => {
@@ -94,18 +104,25 @@ const Object = forwardRef(function Object({ variant }, ref) {
 
       if (intersects.length > 0) {
         controls.enableRotate = true;
+        isDragging = true;
+        renderer.domElement.style.cursor = "grabbing";
       }
     }
 
     function onPointerUp() {
       controls.enableRotate = false; // turned off until next click on the object
+      isDragging = false;
+      renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
     }
 
     // Hover cursor
     let isHovering = false;
+    let isDragging = false;
 
     function onPointerMove(event) {
-      if (!modelRef.current) return;
+      if (!modelRef.current) return; // model not loaded yet
+      if (isDragging) return; // Grabbing prior to hover
+
       getPointerNDC(event);
       raycaster.setFromCamera(pointerNDC, camera);
       const intersects = raycaster.intersectObject(modelRef.current, true);
@@ -122,8 +139,7 @@ const Object = forwardRef(function Object({ variant }, ref) {
       renderer.domElement.style.cursor = "default";
     }
 
-    // capture: true makes sure our raycast decision runs before OrbitControls'
-    // own pointerdown handler decides whether to start rotating
+    // capture: true makes sure our raycast decision runs before OrbitControls' own pointerdown handler decides whether to start rotating
     renderer.domElement.addEventListener("pointerdown", onPointerDown, {
       capture: true,
     });
@@ -158,7 +174,7 @@ const Object = forwardRef(function Object({ variant }, ref) {
       requestAnimationFrame(step);
     }
 
-    // Expose so an outer menu component can call e.g. goToPresetRef.current(presets.angle1)
+    // Expose so an outer menu component can call
     goToPresetRef.current = (key) => goToPreset(presets[key]);
 
     // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
@@ -194,78 +210,68 @@ const Object = forwardRef(function Object({ variant }, ref) {
         scene.add(model);
         setLoaded(true);
 
-        // // --------------- TEST!!! OLD CODE  -  TRY ORBIT CONTROL INSTEAD ---------------
-        // // --- Drag for rotation ---
-        // // States
-        // let isDragging = false;
-        // let isHovering = false;
+        // --- Dimensions ---
+        // --- Model 104 ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
 
-        // // Save new position between each movement
-        // let previousPointer = { x: 0, y: 0 };
+        console.log(gltf);
 
-        // const raycaster = new THREE.Raycaster();
-        // const pointerNDC = new THREE.Vector2();
+        // Define positions in lines
+        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
+        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
+        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
 
-        // // Convert coordinates
-        // function getPointerNDC(event) {
-        //   const rect = renderer.domElement.getBoundingClientRect();
-        //   pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        //   pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        // }
+        // Create 3 dimension plates & append to scene
+        const plateDepth104 = createDimension("DEPTH104");
+        const plateWidth104 = createDimension("WIDTH104");
+        const plateHeight104 = createDimension("HEIGHT104");
 
-        // // Initiate movement
-        // function onPointerDown(event) {
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
+        plateDepth104.attachTo(linjal104, offsetDepth104);
+        plateWidth104.attachTo(linjal104, offsetWidth104);
+        plateHeight104.attachTo(linjal104, offsetHeight104);
 
-        //   if (intersects.length > 0) {
-        //     isDragging = true;
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //   }
-        // }
+        scene.add(plateDepth104.group);
+        scene.add(plateWidth104.group);
+        scene.add(plateHeight104.group);
 
-        // // Rotation of object + cursor check
-        // function onPointerMove(event) {
-        //   if (isDragging) {
-        //     // Calculate distance of user interaction
-        //     const deltaX = event.clientX - previousPointer.x;
-        //     const deltaY = event.clientY - previousPointer.y;
+        // --- Model 108 ---
+        const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
-        //     model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
-        //     model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horizontal direction
+        // Create 3 dimension plates & append to scene
+        const plateDepth108 = createDimension("DEPTH108");
+        const plateWidth108 = createDimension("WIDTH108");
+        const plateHeight108 = createDimension("HEIGHT108");
 
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //     return; // Don't check for hover while already dragging
-        //   }
+        plateDepth108.attachTo(linjal108, offsetDepth108);
+        plateWidth108.attachTo(linjal108, offsetWidth108);
+        plateHeight108.attachTo(linjal108, offsetHeight108);
 
-        //   // Hover-check. Hovering -> cursor pointer
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
+        scene.add(plateDepth108.group);
+        scene.add(plateWidth108.group);
+        scene.add(plateHeight108.group);
 
-        //   const nowHovering = intersects.length > 0;
-        //   if (nowHovering !== isHovering) {
-        //     isHovering = nowHovering;
-        //     renderer.domElement.style.cursor = isHovering
-        //       ? "pointer"
-        //       : "default";
-        //   }
-        // }
+        // Hide all lines and measures (default behaviour)
+        dimensionPlatesRef.current = [
+          plateDepth104,
+          plateWidth104,
+          plateHeight104,
+          plateDepth108,
+          plateWidth108,
+          plateHeight108,
+        ];
 
-        // function onPointerUp() {
-        //   // End movement
-        //   isDragging = false;
-        // }
+        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
 
-        // // Apply functions for rotation of object
-        // renderer.domElement.addEventListener("pointerdown", onPointerDown);
-        // renderer.domElement.addEventListener("pointermove", onPointerMove);
-        // renderer.domElement.addEventListener("pointerup", onPointerUp);
-        // renderer.domElement.addEventListener("pointerleave", onPointerUp);
-        // // --------------- TEST END!!! TEST END!!! ---------------
+        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
+        dimensionPlatesRef.current.forEach(
+          (plate) => (plate.group.visible = false),
+        );
+
+        console.log("108 plate pos:", plateDepth108.group.position);
 
         // // --------------- TEST!!! Toggle material to "Blue" ---------------
         // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
@@ -289,12 +295,16 @@ const Object = forwardRef(function Object({ variant }, ref) {
       frameId = requestAnimationFrame(animate);
       controls.update();
       updateLight();
+
+      // Append dimension plates
+      const plates = dimensionPlatesRef.current;
+      plates.forEach((plate) => plate.update(camera));
+
       renderer.render(scene, camera);
     }
     animate();
 
-    // Keeps size in sync with the container, including layout-only
-    // changes (e.g. flex resizing) that don't fire a window resize event
+    // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;

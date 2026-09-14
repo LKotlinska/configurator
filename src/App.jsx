@@ -12,17 +12,22 @@ function App() {
     <>
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
-          <ModelBlock variant={variant} />
-          <img 
-            className={showConfig ? 'img--collapsed' : 'img--expanded'} 
-            src="./src/assets/test-img.webp"
+          <ModelBlock
+            variant={variant}
+            showConfig={showConfig}
+            onToggle={() => setShowConfig(!showConfig)}
           />
+          <img
+            className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
+            src="./src/assets/test-img.webp"
+          ></img>
         </div>
-        <ProductBlock 
+        <ProductBlock
           variant={variant} 
           onVariantChange={setVariant} 
-          showConfig={showConfig} 
-          onToggle={() => setShowConfig(!showConfig)}/>
+          showConfig={showConfig}
+          onToggle={() => setShowConfig(!showConfig)}
+        />
         <Navigator />
       </main>
     </>
