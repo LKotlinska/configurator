@@ -63,14 +63,14 @@ export default function ObjectMenu({ onAngleSelect, showConfig, onToggle }) {
       <article className={styles.screenMenu}>
         {!showConfig ? (
           <img
-            src="/icons/closeFullscreen2.png"
-            className={styles.closeFullscreen}
+            src="/icons/openFullscreen2.png"
+            // className={styles.closeFullscreen}
             onClick={onToggle}
           />
         ) : (
           <img
             src="/icons/closeFullscreen2.png"
-            className={styles.openFullscreen}
+            // className={styles.openFullscreen}
             onClick={onToggle}
           />
         )}
