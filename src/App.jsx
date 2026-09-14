@@ -11,10 +11,16 @@ function App() {
     <>
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
-          <ModelBlock/>
-          <img className={showConfig ? 'img--collapsed' : 'img--expanded'} src="./src/assets/test-img.webp"></img>
+          <ModelBlock />
+          <img
+            className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
+            src="./src/assets/test-img.webp"
+          ></img>
         </div>
-        <ProductBlock showConfig={showConfig} onToggle={() => setShowConfig(!showConfig)}/>
+        <ProductBlock
+          showConfig={showConfig}
+          onToggle={() => setShowConfig(!showConfig)}
+        />
         <Navigator />
       </main>
     </>
