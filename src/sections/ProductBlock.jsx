@@ -3,7 +3,7 @@ import AccordionItem from "../components/AccordionItem";
 import Button from "../components/Button";
 import Link from "../components/Link";
 import styles from "./ProductBlock.module.css"
-import ModelPreview from "../components/ModelPreview";
+import ModelVariant from "../components/ModelVariant";
 
 export default function ProductBlock({ variant, onVariantChange }) {
     const [ showConfig, setShowConfig ] = useState(true)
@@ -23,7 +23,7 @@ export default function ProductBlock({ variant, onVariantChange }) {
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
                     <span className={styles.priceTag}>2 799 £</span>
 
-                    <ModelPreview variant={variant} onChange={onVariantChange} />
+                    <ModelVariant variant={variant} onChange={onVariantChange} />
 
                     <AccordionItem 
                         title="Armrest"

@@ -1,8 +1,8 @@
-import styles from './ModelPreview.module.css'
+import styles from './ModelVariant.module.css'
 import preview104 from '../assets/models/preview_104.jpg'
 import preview108 from '../assets/models/preview_108.jpg'
 
-export default function ModelPreview({ variant, onChange }) {
+export default function ModelVariant({ variant, onChange }) {
     return (
         <div>
             <h3>Variant</h3>
