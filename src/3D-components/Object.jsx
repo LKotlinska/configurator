@@ -8,10 +8,12 @@ import {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createDimension } from "./createDimension";
 
 const Object = forwardRef(function Object(props, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
+  const dimensionPlatesRef = useRef({});
 
   // Model parts, exposed outside the effect via refs
   const modelRef = useRef(null);
@@ -87,9 +89,6 @@ const Object = forwardRef(function Object(props, ref) {
       raycaster.setFromCamera(pointerNDC, camera);
       const intersects = raycaster.intersectObject(modelRef.current, true);
 
-      // if (intersects.length > 0) {
-      //   controls.enableRotate = true;
-      // }
       if (intersects.length > 0) {
         controls.enableRotate = true;
         isDragging = true;
@@ -182,7 +181,6 @@ const Object = forwardRef(function Object(props, ref) {
     loader.load(
       "/chair.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
       (gltf) => {
-        // console.log(gltf);
         const model = gltf.scene;
 
         modelRef.current = model;
@@ -194,6 +192,39 @@ const Object = forwardRef(function Object(props, ref) {
         legsRef.current = legsGroup ? legsGroup.children : [];
 
         scene.add(model);
+
+        // --- Dimensions ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
+        // const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
+
+        console.log(gltf);
+
+        // Define positions in lines
+        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
+        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+
+        // Create 3 dimension plates & append to scene
+        const plateDepth104 = createDimension("DEPTH104");
+        const plateWidth104 = createDimension("WIDTH104");
+        const plateHeight104 = createDimension("HEIGHT104");
+
+        plateDepth104.attachTo(linjal104, offsetDepth104);
+        plateWidth104.attachTo(linjal104, offsetWidth104);
+        plateHeight104.attachTo(linjal104, offsetHeight104);
+
+        scene.add(plateDepth104.group);
+        scene.add(plateWidth104.group);
+        scene.add(plateHeight104.group);
+
+        dimensionPlatesRef.current = {
+          plateDepth104,
+          plateWidth104,
+          plateHeight104,
+        };
+
+        // --------------- TEST END!!! DIMENSIONS ---------------
 
         // // --------------- TEST!!! Toggle material to "Blue" ---------------
         // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
@@ -217,6 +248,14 @@ const Object = forwardRef(function Object(props, ref) {
       frameId = requestAnimationFrame(animate);
       controls.update();
       updateLight();
+
+      // Append dimension plates
+      const { plateDepth104, plateWidth104, plateHeight104 } =
+        dimensionPlatesRef.current;
+      plateDepth104?.update(camera);
+      plateWidth104?.update(camera);
+      plateHeight104?.update(camera);
+
       renderer.render(scene, camera);
     }
     animate();
