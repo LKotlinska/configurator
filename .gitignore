@@ -4,3 +4,6 @@ node_modules/
 .agents
 skills-lock.json
 *:Zone.Identifier
+.vercel
+.env*
+public/chair-opt.glb

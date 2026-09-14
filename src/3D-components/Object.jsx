@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { CHAIR_URL } from "../config/models";
 
 function Chair() {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
   // Model parts, exposed outside the effect via refs
-  const modelRef = useRef(null);
+  const model_104 = useRef(null);
+  const model_108 = useRef(null);
   const armFrameRef = useRef(null);
   const armCushionRef = useRef(null);
   const chairBodyRef = useRef(null);
@@ -49,17 +51,17 @@ function Chair() {
 
     const loader = new GLTFLoader();
     loader.load(
-      "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
-      //   "/chair-v3.glb",
+      CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
-        // console.log(gltf);
         const model = gltf.scene;
+        // Main models
+        model_104.current = model.getObjectByName("Chair_ES104_Root");
+        model_108.current = model.getObjectByName("Chair_ES108_Root");
 
-        modelRef.current = model;
         armFrameRef.current = model.getObjectByName("arm_frame");
         armCushionRef.current = model.getObjectByName("arm_cushion");
         chairBodyRef.current = model.getObjectByName("body");
-        console.log(chairBodyRef);
+
         const legsGroup = model.getObjectByName("bottom_leg_1");
         legsRef.current = legsGroup ? legsGroup.children : [];
         
