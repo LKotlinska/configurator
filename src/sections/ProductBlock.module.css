@@ -1,0 +1,92 @@
+.productSection {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--product-panel-width);
+  height: 100vh;
+  background-color: var(--color-main-bg);
+  z-index: 100;
+  transition: width 0.5s ease;
+}
+
+.productSection.collapsed {
+  width: 0;
+}
+
+.clipper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.collapseInner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--product-panel-width);
+  height: 100%;
+  padding: 5em;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.5s ease;
+}
+
+.productSection.collapsed .collapseInner {
+  transform: translateX(100%);
+}
+
+.triggerContainer {
+  position: absolute;
+  top: 25%;
+  left: -3em;
+  background-color: var(--color-main-bg);
+  display: flex;
+  align-items: center;
+  padding: 0.5em;
+  border-top-left-radius: 2em;
+  border-bottom-left-radius: 2em;
+  cursor: pointer;
+}
+
+.triggerContainer > span {
+  font-size: var(--font-size-2xl);
+}
+
+.caption {
+  text-transform: uppercase;
+}
+
+.linkContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.modelTitle {
+  font-size: var(--font-size-3xl);
+  margin: 0.2em 0;
+}
+
+.priceTag {
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+}
+
+.statusContainer {
+  display: flex;
+  margin: 1.5em 0 0.5em;
+}
+
+/* -- Separators for status */
+.status:first-child {
+  padding-right: 1em;
+}
+
+.status:not(:first-child) {
+  padding: 0 1em;
+}
+
+.status:not(:last-child) {
+  border-right: 1px solid var(--color-font-base);
+}
+/* -- Separators end */

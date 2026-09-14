@@ -1,0 +1,12 @@
+.navigator {
+  position: fixed;
+  top: 50vh;
+  left: 2vw;
+}
+
+.navigatorIcon {
+  width: 10px;
+  aspect-ratio: 1;
+  background-color: white;
+  margin-bottom: 0.5rem;
+}
