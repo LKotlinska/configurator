@@ -203,9 +203,9 @@ const Object = forwardRef(function Object(props, ref) {
         scene.add(model);
 
         // --- Dimensions ---
+        // --- Model 104 ---
         // Fetch dimension lines in 3D object
         const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
-        // const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
         console.log(gltf);
 
@@ -213,6 +213,9 @@ const Object = forwardRef(function Object(props, ref) {
         const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
         const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
         const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
+        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
 
         // Create 3 dimension plates & append to scene
         const plateDepth104 = createDimension("DEPTH104");
@@ -227,21 +230,40 @@ const Object = forwardRef(function Object(props, ref) {
         scene.add(plateWidth104.group);
         scene.add(plateHeight104.group);
 
+        // --- Model 108 ---
+        const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
+
+        // Create 3 dimension plates & append to scene
+        const plateDepth108 = createDimension("DEPTH108");
+        const plateWidth108 = createDimension("WIDTH108");
+        const plateHeight108 = createDimension("HEIGHT108");
+
+        plateDepth108.attachTo(linjal108, offsetDepth108);
+        plateWidth108.attachTo(linjal108, offsetWidth108);
+        plateHeight108.attachTo(linjal108, offsetHeight108);
+
+        scene.add(plateDepth108.group);
+        scene.add(plateWidth108.group);
+        scene.add(plateHeight108.group);
+
+        // Hide all lines and measures (default behaviour)
         dimensionPlatesRef.current = [
           plateDepth104,
           plateWidth104,
           plateHeight104,
+          plateDepth108,
+          plateWidth108,
+          plateHeight108,
         ];
 
-        // Hide lines and measure (default)
-        rulerMeshesRef.current = [linjal104].filter(Boolean);
+        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
 
         rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
-        plateDepth104.group.visible = false;
-        plateWidth104.group.visible = false;
-        plateHeight104.group.visible = false;
+        dimensionPlatesRef.current.forEach(
+          (plate) => (plate.group.visible = false),
+        );
 
-        // --------------- TEST END!!! DIMENSIONS ---------------
+        console.log("108 plate pos:", plateDepth108.group.position);
 
         // // --------------- TEST!!! Toggle material to "Blue" ---------------
         // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
@@ -267,11 +289,6 @@ const Object = forwardRef(function Object(props, ref) {
       updateLight();
 
       // Append dimension plates
-      // const { plateDepth104, plateWidth104, plateHeight104 } =
-      //   dimensionPlatesRef.current;
-      // plateDepth104?.update(camera);
-      // plateWidth104?.update(camera);
-      // plateHeight104?.update(camera);
       const plates = dimensionPlatesRef.current;
       plates.forEach((plate) => plate.update(camera));
 
