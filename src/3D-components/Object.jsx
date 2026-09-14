@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { CHAIR_URL } from "../config/models";
 
 // Object names as they exist in chair.glb, keyed by variant (see model description).
@@ -60,11 +61,22 @@ function Chair({ variant, armrestOption = "standard" }) {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+    // Without tone mapping so IBL reflections don't clip straight to white
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.7;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
+    // Environment map so metallic/chrome parts have something to reflect -
+    // without it PBR metals render near-black under direct lights alone.
+    // A higher blur (sigma) keeps reflections soft instead of mirror-sharp hotspots.
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmremGenerator.dispose();
+
     // Lightning
-    scene.add(new THREE.AmbientLight(0xffffff, 1));
-    const dir = new THREE.DirectionalLight(0xffffff, 2);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const dir = new THREE.DirectionalLight(0xffffff, 1);
     dir.position.set(5, 10, 5);
     scene.add(dir);
 
