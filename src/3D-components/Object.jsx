@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -89,7 +89,8 @@ function Chair() {
     }
     animate();
 
-    // Keeps size in sync with the container
+    // Keeps size in sync with the container, including layout-only
+    // changes (e.g. flex resizing) that don't fire a window resize event
     function handleResize() {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
@@ -98,8 +99,12 @@ function Chair() {
       camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(newWidth, newHeight);
+      // Repaint immediately since setSize() clears the canvas's drawing buffer
+      // causing 'blinking' on canvas when toggling visibility of configurator section
+      renderer.render(scene, camera);
     }
-    window.addEventListener("resize", handleResize);
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(container);
   }, []);
 
   return (
