@@ -23,8 +23,7 @@ const Object = forwardRef(function Object(props, ref) {
   // Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
-  // Exposes goToPreset(key) to whichever parent holds a ref to this component,
-  // e.g. <Object ref={objectRef} /> then objectRef.current.goToPreset("angle1")
+  // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
   }));
@@ -88,20 +87,30 @@ const Object = forwardRef(function Object(props, ref) {
       raycaster.setFromCamera(pointerNDC, camera);
       const intersects = raycaster.intersectObject(modelRef.current, true);
 
+      // if (intersects.length > 0) {
+      //   controls.enableRotate = true;
+      // }
       if (intersects.length > 0) {
         controls.enableRotate = true;
+        isDragging = true;
+        renderer.domElement.style.cursor = "grabbing";
       }
     }
 
     function onPointerUp() {
       controls.enableRotate = false; // turned off until next click on the object
+      isDragging = false;
+      renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
     }
 
     // Hover cursor
     let isHovering = false;
+    let isDragging = false;
 
     function onPointerMove(event) {
-      if (!modelRef.current) return;
+      if (!modelRef.current) return; // model not loaded yet
+      if (isDragging) return; // Grabbing prior to hover
+
       getPointerNDC(event);
       raycaster.setFromCamera(pointerNDC, camera);
       const intersects = raycaster.intersectObject(modelRef.current, true);
@@ -118,8 +127,7 @@ const Object = forwardRef(function Object(props, ref) {
       renderer.domElement.style.cursor = "default";
     }
 
-    // capture: true makes sure our raycast decision runs before OrbitControls'
-    // own pointerdown handler decides whether to start rotating
+    // capture: true makes sure our raycast decision runs before OrbitControls' own pointerdown handler decides whether to start rotating
     renderer.domElement.addEventListener("pointerdown", onPointerDown, {
       capture: true,
     });
@@ -154,7 +162,7 @@ const Object = forwardRef(function Object(props, ref) {
       requestAnimationFrame(step);
     }
 
-    // Expose so an outer menu component can call e.g. goToPresetRef.current(presets.angle1)
+    // Expose so an outer menu component can call
     goToPresetRef.current = (key) => goToPreset(presets[key]);
 
     // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
@@ -172,8 +180,7 @@ const Object = forwardRef(function Object(props, ref) {
     // Loader
     const loader = new GLTFLoader();
     loader.load(
-      // "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
-      "/chair.glb",
+      "/chair.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
       (gltf) => {
         // console.log(gltf);
         const model = gltf.scene;
@@ -187,79 +194,6 @@ const Object = forwardRef(function Object(props, ref) {
         legsRef.current = legsGroup ? legsGroup.children : [];
 
         scene.add(model);
-
-        // // --------------- TEST!!! OLD CODE  -  TRY ORBIT CONTROL INSTEAD ---------------
-        // // --- Drag for rotation ---
-        // // States
-        // let isDragging = false;
-        // let isHovering = false;
-
-        // // Save new position between each movement
-        // let previousPointer = { x: 0, y: 0 };
-
-        // const raycaster = new THREE.Raycaster();
-        // const pointerNDC = new THREE.Vector2();
-
-        // // Convert coordinates
-        // function getPointerNDC(event) {
-        //   const rect = renderer.domElement.getBoundingClientRect();
-        //   pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        //   pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        // }
-
-        // // Initiate movement
-        // function onPointerDown(event) {
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
-
-        //   if (intersects.length > 0) {
-        //     isDragging = true;
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //   }
-        // }
-
-        // // Rotation of object + cursor check
-        // function onPointerMove(event) {
-        //   if (isDragging) {
-        //     // Calculate distance of user interaction
-        //     const deltaX = event.clientX - previousPointer.x;
-        //     const deltaY = event.clientY - previousPointer.y;
-
-        //     model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
-        //     model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horizontal direction
-
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //     return; // Don't check for hover while already dragging
-        //   }
-
-        //   // Hover-check. Hovering -> cursor pointer
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
-
-        //   const nowHovering = intersects.length > 0;
-        //   if (nowHovering !== isHovering) {
-        //     isHovering = nowHovering;
-        //     renderer.domElement.style.cursor = isHovering
-        //       ? "pointer"
-        //       : "default";
-        //   }
-        // }
-
-        // function onPointerUp() {
-        //   // End movement
-        //   isDragging = false;
-        // }
-
-        // // Apply functions for rotation of object
-        // renderer.domElement.addEventListener("pointerdown", onPointerDown);
-        // renderer.domElement.addEventListener("pointermove", onPointerMove);
-        // renderer.domElement.addEventListener("pointerup", onPointerUp);
-        // renderer.domElement.addEventListener("pointerleave", onPointerUp);
-        // // --------------- TEST END!!! TEST END!!! ---------------
 
         // // --------------- TEST!!! Toggle material to "Blue" ---------------
         // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
@@ -287,8 +221,7 @@ const Object = forwardRef(function Object(props, ref) {
     }
     animate();
 
-    // Keeps size in sync with the container, including layout-only
-    // changes (e.g. flex resizing) that don't fire a window resize event
+    // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
