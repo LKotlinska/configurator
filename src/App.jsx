@@ -6,12 +6,14 @@ import Navigator from "./components/Navigator";
 
 function App() {
   const [showConfig, setShowConfig] = useState(true);
+  const [ variant, setVariant ] = useState("ES104");
 
   return (
     <>
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
           <ModelBlock
+            variant={variant}
             showConfig={showConfig}
             onToggle={() => setShowConfig(!showConfig)}
           />
@@ -21,6 +23,8 @@ function App() {
           ></img>
         </div>
         <ProductBlock
+          variant={variant} 
+          onVariantChange={setVariant} 
           showConfig={showConfig}
           onToggle={() => setShowConfig(!showConfig)}
         />

@@ -3,4 +3,11 @@ node_modules/
 .claude
 .agents
 skills-lock.json
-chair.glb
+.vercel
+.env*
+public/chair-opt.glb
+.env.development.local
+.env.local
+.vercel/repo.json
+*:Zone.Identifier
+src/3D-components/model.md
