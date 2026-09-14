@@ -15,4 +15,5 @@ h6 {
 
 .divider {
   display: flex;
+  position: relative;
 }
