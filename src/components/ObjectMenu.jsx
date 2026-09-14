@@ -1,10 +1,9 @@
 import styles from "./ObjectMenu.module.css";
 import { useState } from "react";
 
-export default function ObjectMenu({ onAngleSelect }) {
+export default function ObjectMenu({ onAngleSelect, showConfig, onToggle }) {
   const [showAngles, setShowAngles] = useState(false);
   const [showRuler, setShowRuler] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   function toggleAngles() {
     setShowAngles((prev) => !prev);
@@ -62,19 +61,17 @@ export default function ObjectMenu({ onAngleSelect }) {
 
       {/* Fullscreen menu */}
       <article className={styles.screenMenu}>
-        {!isFullscreen && (
-          <img
-            src="/icons/openFullscreen2.png"
-            className={styles.openFullscreen}
-            onClick={() => setIsFullscreen(true)}
-          />
-        )}
-
-        {isFullscreen && (
+        {!showConfig ? (
           <img
             src="/icons/closeFullscreen2.png"
             className={styles.closeFullscreen}
-            onClick={() => setIsFullscreen(false)}
+            onClick={onToggle}
+          />
+        ) : (
+          <img
+            src="/icons/closeFullscreen2.png"
+            className={styles.openFullscreen}
+            onClick={onToggle}
           />
         )}
       </article>

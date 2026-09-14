@@ -11,7 +11,10 @@ function App() {
     <>
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
-          <ModelBlock />
+          <ModelBlock
+            showConfig={showConfig}
+            onToggle={() => setShowConfig(!showConfig)}
+          />
           <img
             className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
             src="./src/assets/test-img.webp"
