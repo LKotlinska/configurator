@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { CHAIR_URL } from "../config/models";
 
-function Chair() {
+function Chair({ variant } ) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
@@ -14,6 +14,8 @@ function Chair() {
   const armCushionRef = useRef(null);
   const chairBodyRef = useRef(null);
   const legsRef = useRef([]);
+
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     // Solved double rendering
@@ -64,8 +66,9 @@ function Chair() {
 
         const legsGroup = model.getObjectByName("bottom_leg_1");
         legsRef.current = legsGroup ? legsGroup.children : [];
-        
+
         scene.add(model);
+        setLoaded(true);
 
         // --------------- TEST!!! Toggle material to "Blue" ---------------
         gltf.parser.getDependency("material", 0).then((blueMaterial) => {
@@ -108,6 +111,14 @@ function Chair() {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
   }, []);
+
+  // Listens to viariant prop for changes, and re-applies once the model finishes loading
+  useEffect(() => {
+    if (!model_104.current || !model_108.current) return;
+    model_104.current.visible = variant === "ES104";
+    model_108.current.visible = variant === "ES108";
+  }, [variant, loaded]);
+
 
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
