@@ -12,7 +12,6 @@ export default function ModelBlock({ variant }) {
 
   return (
     <section className={styles.modelBlock}>
-      <h2>3d model will be displayed here</h2>
       <Chair ref={chairRef} variant={variant}/>
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu onAngleSelect={handleAngleSelect} />
