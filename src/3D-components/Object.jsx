@@ -8,19 +8,23 @@ import {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { CHAIR_URL } from "../config/models";
 
-const Object = forwardRef(function Object(props, ref) {
+const Object = forwardRef(function Object({ variant }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
 
   // Model parts, exposed outside the effect via refs
   const modelRef = useRef(null);
+  const model_104 = useRef(null);
+  const model_108 = useRef(null);
   const armFrameRef = useRef(null);
   const armCushionRef = useRef(null);
   const chairBodyRef = useRef(null);
   const legsRef = useRef([]);
 
-  // Enables user interaction to trigger the preset angles
+  const [loaded, setLoaded] = useState(false);  
+// Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
   // Exposes goToPreset(key) to whichever parent holds a ref to this component,
@@ -172,21 +176,23 @@ const Object = forwardRef(function Object(props, ref) {
     // Loader
     const loader = new GLTFLoader();
     loader.load(
-      // "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
-      "/chair.glb",
+      CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
-        // console.log(gltf);
         const model = gltf.scene;
-
         modelRef.current = model;
+        // Main models
+        model_104.current = model.getObjectByName("Chair_ES104_Root");
+        model_108.current = model.getObjectByName("Chair_ES108_Root");
+
         armFrameRef.current = model.getObjectByName("arm_frame");
         armCushionRef.current = model.getObjectByName("arm_cushion");
         chairBodyRef.current = model.getObjectByName("body");
-        console.log(chairBodyRef);
+
         const legsGroup = model.getObjectByName("bottom_leg_1");
         legsRef.current = legsGroup ? legsGroup.children : [];
 
         scene.add(model);
+        setLoaded(true);
 
         // // --------------- TEST!!! OLD CODE  -  TRY ORBIT CONTROL INSTEAD ---------------
         // // --- Drag for rotation ---
@@ -304,6 +310,14 @@ const Object = forwardRef(function Object(props, ref) {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
   }, []);
+
+  // Listens to viariant prop for changes, and re-applies once the model finishes loading
+  useEffect(() => {
+    if (!model_104.current || !model_108.current) return;
+    model_104.current.visible = variant === "ES104";
+    model_108.current.visible = variant === "ES108";
+  }, [variant, loaded]);
+
 
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
