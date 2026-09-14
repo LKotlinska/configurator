@@ -8,4 +8,9 @@
   width: 8em;
   height: 8em;
   cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.variantInput:checked + .variantImg {
+  border-color: #333;
 }
