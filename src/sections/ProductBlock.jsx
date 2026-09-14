@@ -1,15 +1,12 @@
-import { useState } from "react";
 import AccordionItem from "../components/AccordionItem";
 import Button from "../components/Button";
 import Link from "../components/Link";
 import styles from "./ProductBlock.module.css"
 
-export default function ProductBlock() {
-    const [ showConfig, setShowConfig ] = useState(true)
-
+export default function ProductBlock({ showConfig, onToggle }) {
     return(
         <section className={`${styles.productSection} ${!showConfig ? styles.collapsed : ""}`}>
-            <span className={styles.triggerContainer} onClick={() => setShowConfig(!showConfig)}>
+            <span className={styles.triggerContainer} onClick={onToggle}>
                 <span className="material-symbols-outlined">
                     {showConfig ? "chevron_right" : "chevron_left"}
                 </span>
