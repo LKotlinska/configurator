@@ -63,8 +63,8 @@ export default function ProductBlock({
             <div className={styles.collapseInner}>
                 <article>
                     <span className={styles.caption}>Configurator</span>
-                    <h2 className={styles.modelTitle}>Elegant Armchair</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
+                    <h2 className={styles.modelTitle}>Meridian Chair</h2>
+                    <p className={styles.description}>Clean lines and a balanced silhouette make the Meridian equally at home in the boardroom or the home office. A sculpted frame and supportive seat keep you comfortable through long working days, while a smooth-rolling base or a sturdy fixed foot make it easy to move between meetings or settle in for focused work. Choose your base, armrests, and upholstery to match the room.</p>
                     <span className={styles.priceTag}>2 799 £</span>
 
                     <AccordionItem 
