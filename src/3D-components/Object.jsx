@@ -357,10 +357,10 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
       parts.singleArmrest.visible = armrestOption === "single";
       parts.noArmrest.visible = armrestOption === "none";
 
-      // Cushion height depends on the armrest variant (see model.md):
-      // the single cushion pairs with both the single-armrest and no-armrest looks.
+      // Cushion height depends on the armrest variant (see model.md).
+      // No armrest means no armrest cushion either.
       parts.standardCushion.visible = armrestOption === "standard";
-      parts.singleCushion.visible = armrestOption !== "standard";
+      parts.singleCushion.visible = armrestOption === "single";
     }
   }, [variant, armrestOption, loaded]);
 

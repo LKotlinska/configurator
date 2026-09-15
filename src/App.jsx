@@ -7,6 +7,7 @@ import Navigator from "./components/Navigator";
 function App() {
   const [showConfig, setShowConfig] = useState(true);
   const [ variant, setVariant ] = useState("ES104");
+  const [ armrestOption, setArmrestOption ] = useState("standard");
 
   return (
     <>
@@ -14,6 +15,7 @@ function App() {
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
           <ModelBlock
             variant={variant}
+            armrestOption={armrestOption}
             showConfig={showConfig}
             onToggle={() => setShowConfig(!showConfig)}
           />
@@ -23,8 +25,10 @@ function App() {
           ></img>
         </div>
         <ProductBlock
-          variant={variant} 
-          onVariantChange={setVariant} 
+          variant={variant}
+          onVariantChange={setVariant}
+          armrestOption={armrestOption}
+          onArmrestChange={setArmrestOption}
           showConfig={showConfig}
           onToggle={() => setShowConfig(!showConfig)}
         />
