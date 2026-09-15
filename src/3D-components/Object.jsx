@@ -128,8 +128,8 @@ const Object = forwardRef(function Object(
     controls.enableRotate = false; // user can't rotate object by clicking on canvas
     controls.enableZoom = true; // zoom handled by OrbitControls
     controls.enablePan = false; // don't let the user pan the object away
-    controls.minDistance = 1.5; // zoom limit
-    controls.maxDistance = 3; // zoom limit
+    controls.minDistance = 0.8; // zoom limit
+    controls.maxDistance = 2; // zoom limit
     controls.target.set(0, 0, 0);
     controls.update();
 
@@ -256,6 +256,13 @@ const Object = forwardRef(function Object(
 
         scene.add(model);
         setLoaded(true);
+
+        // Re-center vertically
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        camera.position.y += center.y - controls.target.y;
+        controls.target.y = center.y;
+        controls.update();
 
         // --- Dimensions ---
         // --- Model 104 ---
