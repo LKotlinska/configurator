@@ -6,13 +6,22 @@ import FootVariant from "../components/FootVariant";
 import VariantSwatches from "../components/VariantSwatches";
 import preview104 from "../assets/previews/preview_ES104.jpg";
 import preview108 from "../assets/previews/preview_ES108.jpg";
+import armrestStandard from "../assets/previews/armrest_104/02_Armrest_Metal_ES104.png";
+import armrestSingle from "../assets/previews/armrest_104/03_Singel_Armrest_ES104.png";
+import armrestNone from "../assets/previews/armrest_104/04_Singel_NOarmrest_ES104.png";
 
 const FOOT_OPTIONS = [
     { id: "model-104", value: "ES104", label: "ES104", image: preview104 },
     { id: "model-108", value: "ES108", label: "ES108", image: preview108 },
 ];
 
-export default function ProductBlock({ variant, onVariantChange, showConfig, onToggle }) {
+const ARMREST_OPTIONS = [
+    { id: "armrest-standard", value: "standard", label: "Standard", image: armrestStandard },
+    { id: "armrest-single", value: "single", label: "Single", image: armrestSingle },
+    { id: "armrest-none", value: "none", label: "None", image: armrestNone },
+];
+
+export default function ProductBlock({ variant, onVariantChange, armrestOption, onArmrestChange, showConfig, onToggle }) {
     return(
         <section className={`${styles.productSection} ${!showConfig ? styles.collapsed : ""}`}>
             <span className={styles.triggerContainer} onClick={onToggle}>
@@ -39,9 +48,17 @@ export default function ProductBlock({ variant, onVariantChange, showConfig, onT
                             />
                         }
                     />
-                    <AccordionItem 
-                        title="Material"
-                    />            
+                    <AccordionItem
+                        title="Armrest"
+                        children={
+                            <VariantSwatches
+                                name={"armrest-variant"}
+                                options={ARMREST_OPTIONS}
+                                selected={armrestOption}
+                                onChange={onArmrestChange}
+                            />
+                        }
+                    />
                     <AccordionItem 
                         title="Colour"
                     />
