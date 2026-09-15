@@ -1,12 +1,15 @@
-.navigator {
-  position: fixed;
-  top: 50vh;
-  left: 2vw;
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background-color: #ccc;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 6px;
 }
 
-.navigatorIcon {
-  width: 10px;
-  aspect-ratio: 1;
-  background-color: white;
-  margin-bottom: 0.5rem;
+.dot.active {
+  background-color: #333;
 }

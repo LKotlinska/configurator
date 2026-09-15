@@ -54,6 +54,13 @@
   background-color: rgba(255, 255, 255, 0.9);
 }
 
+.navPosition {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  transform: translateX(-50%);
+}
+
 /* .environmentSlideshow__arrow--prev {
   left: 16px;
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./Slideshow.module.css";
+import Navigator from "../components/Navigator";
 
 const images = [
   "./environment/01_chair.png",
@@ -45,6 +46,13 @@ function Slideshow({ showConfig }) {
         onClick={goToNext}
         aria-label="Next image"
       />
+      <article className={styles.navPosition}>
+        <Navigator
+          total={images.length}
+          activeIndex={activeIndex}
+          onSelect={setActiveIndex}
+        />
+      </article>
     </section>
   );
 }
