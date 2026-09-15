@@ -18,17 +18,14 @@
   object-position: center;
 }
 
-.environmentSlideshow__arrow {
-  position: absolute;
-  top: 50%;
+.arrows {
+  z-index: 5;
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
   border: none;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.7);
-  font-size: 24px;
-  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -36,14 +33,31 @@
   transition: background-color 0.2s ease;
 }
 
-.environmentSlideshow__arrow:hover {
+.leftArrow {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+}
+
+.rightArrow {
+  position: absolute;
+  top: 50%;
+  right: 2%;
+}
+.leftArrow {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+}
+
+.rightArrow .arrows:hover {
   background-color: rgba(255, 255, 255, 0.9);
 }
 
-.environmentSlideshow__arrow--prev {
+/* .environmentSlideshow__arrow--prev {
   left: 16px;
 }
 
 .environmentSlideshow__arrow--next {
   right: 16px;
-}
+} */

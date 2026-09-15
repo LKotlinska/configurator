@@ -26,31 +26,26 @@ function Slideshow({ showConfig }) {
   };
 
   return (
-    <div className={styles.slideshowContainer}>
+    <section className={styles.slideshowContainer}>
       <img
         className={`${styles.environmentImage} ${showConfig ? styles["img--collapsed"] : styles["img--expanded"]}`}
         src={images[activeIndex]}
         alt=""
       />
-      {images.length > 1 && (
-        <>
-          <button
-            className="environmentSlideshow__arrow environmentSlideshow__arrow--prev"
-            onClick={goToPrevious}
-            aria-label="Previous image"
-          >
-            ‹
-          </button>
-          <button
-            className="environmentSlideshow__arrow environmentSlideshow__arrow--next"
-            onClick={goToNext}
-            aria-label="Next image"
-          >
-            ›
-          </button>
-        </>
-      )}
-    </div>
+
+      <img
+        src="/icons/LeftArrow.png"
+        className={`${styles.arrows} ${styles.leftArrow}`}
+        onClick={goToPrevious}
+        aria-label="Previous image"
+      />
+      <img
+        src="/icons/RightArrow.png"
+        className={`${styles.arrows} ${styles.rightArrow}`}
+        onClick={goToNext}
+        aria-label="Next image"
+      />
+    </section>
   );
 }
 
