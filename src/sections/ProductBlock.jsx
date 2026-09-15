@@ -3,6 +3,14 @@ import Button from "../components/Button";
 import Link from "../components/Link";
 import styles from "./ProductBlock.module.css"
 import FootVariant from "../components/FootVariant";
+import VariantSwatches from "../components/VariantSwatches";
+import preview104 from "../assets/previews/preview_ES104.jpg";
+import preview108 from "../assets/previews/preview_ES108.jpg";
+
+const FOOT_OPTIONS = [
+    { id: "model-104", value: "ES104", label: "ES104", image: preview104 },
+    { id: "model-108", value: "ES108", label: "ES108", image: preview108 },
+];
 
 export default function ProductBlock({ variant, onVariantChange, showConfig, onToggle }) {
     return(
@@ -23,14 +31,13 @@ export default function ProductBlock({ variant, onVariantChange, showConfig, onT
                     <AccordionItem 
                         title="Foot"
                         children={
-                            <FootVariant 
-                                variant={variant} 
-                                onChange={onVariantChange} 
-                        />}
-                    />            
-                    
-                    <AccordionItem 
-                        title="Armrest"
+                            <VariantSwatches
+                                name={"foot-variant"}
+                                options={FOOT_OPTIONS}
+                                selected={variant}
+                                onChange={onVariantChange}
+                            />
+                        }
                     />
                     <AccordionItem 
                         title="Material"
