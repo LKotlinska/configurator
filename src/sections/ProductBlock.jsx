@@ -69,6 +69,9 @@ export default function ProductBlock({ variant, onVariantChange, armrestOption, 
                         }
                     />
                     <AccordionItem 
+                        title="Material"
+                    />
+                    <AccordionItem 
                         title="Colour"
                     />
 
