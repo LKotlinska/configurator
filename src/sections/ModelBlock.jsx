@@ -3,7 +3,7 @@ import styles from "./ModelBlock.module.css";
 import Chair from "../3D-components/Object";
 import ObjectMenu from "../components/ObjectMenu";
 
-export default function ModelBlock({ variant, showConfig, onToggle }) {
+export default function ModelBlock({ variant, armrestOption, material, color, showConfig, onToggle }) {
   const chairRef = useRef(null);
 
   function handleAngleSelect(key) {
@@ -11,12 +11,12 @@ export default function ModelBlock({ variant, showConfig, onToggle }) {
   }
 
   function toggleRuler(visible) {
-    chairRef.current?.setRulerVisible(visible);
+    chairRef.current?.setRulerVisible(visible, variant);
   }
 
   return (
     <section className={styles.modelBlock}>
-      <Chair ref={chairRef} variant={variant}/>
+      <Chair ref={chairRef} variant={variant} armrestOption={armrestOption} material={material} color={color}/>
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}
