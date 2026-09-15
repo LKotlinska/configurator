@@ -412,5 +412,6 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
 });
-
+});
+  
 export default ChairModel;
