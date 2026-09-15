@@ -11,12 +11,12 @@ export default function ModelBlock({ variant, showConfig, onToggle }) {
   }
 
   function toggleRuler(visible) {
-    chairRef.current?.setRulerVisible(visible);
+    chairRef.current?.setRulerVisible(visible, variant);
   }
 
   return (
     <section className={styles.modelBlock}>
-      <Chair ref={chairRef} variant={variant}/>
+      <Chair ref={chairRef} variant={variant} />
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}
