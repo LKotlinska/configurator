@@ -16,38 +16,6 @@ import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_ma
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
 
-const ChairModel = forwardRef(function ChairModel(
-  { variant, armrestOption = "standard" },
-  ref,
-) {
-  // Object names as they exist in chair.glb, keyed by variant (see model description).
-  const CHAIR_PARTS = {
-    ES104: {
-      root: "Chair_ES104_Root",
-      base: "01_Base_metal_W_wheels_ES104",
-      standardArmrest: "02_Armrest_Metal_ES104",
-      singleArmrest: "03_Singel_Armrest_ES104",
-      noArmrest: "04_Singel_NOarmrest_ES104",
-      body: "05_Body_ES104",
-      standardCushion: "06_Metal_Cushion_ES104",
-      singleCushion: "07_Singel_Cushion_ES104",
-    },
-    ES108: {
-      root: "Chair_ES108_Root",
-      base: "01_Base_metal_ES108",
-      standardArmrest: "02_Armrest_Metal_ES108",
-      singleArmrest: "03_Singel_Armrest_ES108",
-      noArmrest: "04_Singel_NOarmrest_ES108",
-      body: "05_Body_ES108",
-      standardCushion: "06_Metal_Cushion_ES108",
-      singleCushion: "07_Singel_Cushion_ES108",
-    },
-  };
-
-  // Via globalThis so this doesn't reference the (TDZ'd) local `Object` binding
-  // declared below, which shadows the global.
-  const objectEntries = globalThis.Object.entries;
-
 // Object names as they exist in chair.glb, keyed by variant (see model description).
 const CHAIR_PARTS = {
   ES104: {
@@ -72,11 +40,7 @@ const CHAIR_PARTS = {
   },
 };
 
-// Via globalThis so this doesn't reference the (TDZ'd) local `Object` binding
-// declared below, which shadows the global.
-const objectEntries = globalThis.Object.entries;
-
-const Object = forwardRef(function Object(
+const ChairModel = forwardRef(function ChairModel(
   { variant, armrestOption = "standard", material = "fabric", color = "cream" },
   ref,
 ) {
@@ -293,9 +257,9 @@ const Object = forwardRef(function Object(
         modelRef.current = model;
         selectVariantRef.current = gltf.functions?.selectVariant ?? null;
         // Resolve every named part for every variant from CHAIR_PARTS.
-        for (const [variantKey, partNames] of objectEntries(CHAIR_PARTS)) {
+        for (const [variantKey, partNames] of Object.entries(CHAIR_PARTS)) {
           const parts = {};
-          for (const [partKey, objectName] of objectEntries(partNames)) {
+          for (const [partKey, objectName] of Object.entries(partNames)) {
             parts[partKey] = model.getObjectByName(objectName);
           }
           partsRef.current[variantKey] = parts;
@@ -421,7 +385,7 @@ const Object = forwardRef(function Object(
   useEffect(() => {
     if (!loaded) return;
 
-    for (const [variantKey, parts] of objectEntries(partsRef.current)) {
+    for (const [variantKey, parts] of Object.entries(partsRef.current)) {
       const isActiveVariant = variantKey === variant;
       parts.root.visible = isActiveVariant;
       if (!isActiveVariant) continue;
@@ -445,7 +409,7 @@ const Object = forwardRef(function Object(
     if (!loaded || !selectVariantRef.current) return;
 
     const variantName = `${material}_${color}`;
-    for (const [, parts] of objectEntries(partsRef.current)) {
+    for (const [, parts] of Object.entries(partsRef.current)) {
       for (const partKey of UPHOLSTERY_PARTS) {
         const mesh = parts[partKey];
         if (mesh) {
@@ -475,6 +439,5 @@ const Object = forwardRef(function Object(
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
 });
-// });
 
 export default ChairModel;
