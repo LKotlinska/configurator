@@ -11,11 +11,11 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createDimension } from "./createDimension";
 import { CHAIR_URL } from "../config/models";
 
-const Object = forwardRef(function Object({ variant }, ref) {
+const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
-  const dimensionPlatesRef = useRef([]);
-  const rulerMeshesRef = useRef([]);
+  const dimensionPlatesRef = useRef({});
+  const rulerMeshesRef = useRef({});
 
   // Model parts, exposed outside the effect via refs
   const modelRef = useRef(null);
@@ -30,17 +30,30 @@ const Object = forwardRef(function Object({ variant }, ref) {
   // Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
+  function applyRulerVisibility(visible, currentVariant) {
+    const plates = dimensionPlatesRef.current;
+    const rulers = rulerMeshesRef.current;
+
+    if (!plates?.[currentVariant] || !rulers?.[currentVariant]) return;
+
+    // Hide all measures (default)
+    Object.values(rulers)
+      .flat()
+      .forEach((mesh) => (mesh.visible = false));
+    Object.values(plates)
+      .flat()
+      .forEach((plate) => (plate.group.visible = false));
+
+    // Show measures of current variants only
+    rulers[currentVariant].forEach((mesh) => (mesh.visible = visible));
+    plates[currentVariant].forEach((plate) => (plate.group.visible = visible));
+  }
+
   // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
-    setRulerVisible: (visible) => {
-      rulerMeshesRef.current.forEach((mesh) => {
-        mesh.visible = visible;
-      });
-      dimensionPlatesRef.current.forEach((plate) => {
-        plate.group.visible = visible;
-      });
-    },
+    setRulerVisible: (visible, variantKey) =>
+      applyRulerVisibility(visible, variantKey),
   }));
 
   useEffect(() => {
@@ -62,7 +75,6 @@ const Object = forwardRef(function Object({ variant }, ref) {
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    // camera.position.set(0, 1, 3);
     camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
 
     // Renderer
@@ -211,12 +223,6 @@ const Object = forwardRef(function Object({ variant }, ref) {
         setLoaded(true);
 
         // --- Dimensions ---
-        // --- Model 104 ---
-        // Fetch dimension lines in 3D object
-        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
-
-        console.log(gltf);
-
         // Define positions in lines
         const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
         const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
@@ -224,6 +230,10 @@ const Object = forwardRef(function Object({ variant }, ref) {
         const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
         const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
         const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
+
+        // --- Model 104 ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
 
         // Create 3 dimension plates & append to scene
         const plateDepth104 = createDimension("69,5");
@@ -239,6 +249,7 @@ const Object = forwardRef(function Object({ variant }, ref) {
         scene.add(plateHeight104.group);
 
         // --- Model 108 ---
+        // Fetch dimension lines in 3D object
         const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
         // Create 3 dimension plates & append to scene
@@ -255,33 +266,17 @@ const Object = forwardRef(function Object({ variant }, ref) {
         scene.add(plateHeight108.group);
 
         // Hide all lines and measures (default behaviour)
-        dimensionPlatesRef.current = [
-          plateDepth104,
-          plateWidth104,
-          plateHeight104,
-          plateDepth108,
-          plateWidth108,
-          plateHeight108,
-        ];
+        dimensionPlatesRef.current = {
+          ES104: [plateDepth104, plateWidth104, plateHeight104],
+          ES108: [plateDepth108, plateWidth108, plateHeight108],
+        };
+        rulerMeshesRef.current = {
+          ES104: [linjal104].filter(Boolean),
+          ES108: [linjal108].filter(Boolean),
+        };
 
-        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
-
-        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
-        dimensionPlatesRef.current.forEach(
-          (plate) => (plate.group.visible = false),
-        );
-
-        console.log("108 plate pos:", plateDepth108.group.position);
-
-        // // --------------- TEST!!! Toggle material to "Blue" ---------------
-        // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
-        //   model.traverse((obj) => {
-        //     if (obj.isMesh) {
-        //       obj.material = blueMaterial;
-        //     }
-        //   });
-        // });
-        // // ---------------  TEST END!!! ---------------
+        // Hide all measures (default)
+        applyRulerVisibility(false, variant);
       },
       undefined,
       (error) => {
@@ -297,11 +292,21 @@ const Object = forwardRef(function Object({ variant }, ref) {
       updateLight();
 
       // Append dimension plates
-      const plates = dimensionPlatesRef.current;
-      plates.forEach((plate) => plate.update(camera));
+      if (
+        !dimensionPlatesRef.current?.ES104 ||
+        !dimensionPlatesRef.current?.ES108
+      ) {
+        renderer.render(scene, camera);
+        return;
+      }
+
+      Object.values(dimensionPlatesRef.current)
+        .flat()
+        .forEach((plate) => plate.update(camera));
 
       renderer.render(scene, camera);
     }
+
     animate();
 
     // Keeps size in sync with the container, including layout-only changes
@@ -328,9 +333,25 @@ const Object = forwardRef(function Object({ variant }, ref) {
     model_108.current.visible = variant === "ES108";
   }, [variant, loaded]);
 
+  useEffect(() => {
+    // Guard
+    if (
+      !dimensionPlatesRef.current?.ES104 ||
+      !dimensionPlatesRef.current?.ES108
+    ) {
+      return;
+    }
+
+    // If ruler is activated - show dimensions for current variant
+    const anyVisible = Object.values(dimensionPlatesRef.current)
+      .flat()
+      .some((plate) => plate.group.visible);
+    applyRulerVisibility(anyVisible, variant);
+  }, [variant]);
+
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
 });
 
-export default Object;
+export default ChairModel;
