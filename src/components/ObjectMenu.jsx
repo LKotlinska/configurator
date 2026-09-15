@@ -78,9 +78,9 @@ export default function ObjectMenu({
       {/* Fullscreen menu */}
       <article className={styles.screenMenu}>
         {!showConfig ? (
-          <img src="/icons/openFullscreen2.png" onClick={onToggle} />
+          <img src="/icons/openFullscreen.png" onClick={onToggle} />
         ) : (
-          <img src="/icons/closeFullscreen2.png" onClick={onToggle} />
+          <img src="/icons/closeFullscreen.png" onClick={onToggle} />
         )}
       </article>
 
