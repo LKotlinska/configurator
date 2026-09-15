@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import styles from "./Slideshow.module.css";
 import Navigator from "../components/Navigator";
 
@@ -15,7 +15,7 @@ const images = [
   "./environment/010_chair.png",
 ];
 
-function Slideshow({ showConfig }) {
+const Slideshow = forwardRef(function Slideshow({ showConfig }, ref) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const goToPrevious = () => {
@@ -27,7 +27,7 @@ function Slideshow({ showConfig }) {
   };
 
   return (
-    <section className={styles.slideshowContainer}>
+    <section ref={ref} className={styles.slideshowContainer}>
       <img
         className={`${styles.environmentImage} ${showConfig ? styles["img--collapsed"] : styles["img--expanded"]}`}
         src={images[activeIndex]}
@@ -55,6 +55,6 @@ function Slideshow({ showConfig }) {
       </article>
     </section>
   );
-}
+});
 
 export default Slideshow;
