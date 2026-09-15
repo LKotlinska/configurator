@@ -8,23 +8,49 @@ import {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { createDimension } from "./createDimension";
 import { CHAIR_URL } from "../config/models";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { createDimension } from "./createDimension";
+
 
 const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
+// Object names as they exist in chair.glb, keyed by variant (see model description).
+const CHAIR_PARTS = {
+  ES104: {
+    root: "Chair_ES104_Root",
+    base: "01_Base_metal_W_wheels_ES104",
+    standardArmrest: "02_Armrest_Metal_ES104",
+    singleArmrest: "03_Singel_Armrest_ES104",
+    noArmrest: "04_Singel_NOarmrest_ES104",
+    body: "05_Body_ES104",
+    standardCushion: "06_Metal_Cushion_ES104",
+    singleCushion: "07_Singel_Cushion_ES104",
+  },
+  ES108: {
+    root: "Chair_ES108_Root",
+    base: "01_Base_metal_ES108",
+    standardArmrest: "02_Armrest_Metal_ES108",
+    singleArmrest: "03_Singel_Armrest_ES108",
+    noArmrest: "04_Singel_NOarmrest_ES108",
+    body: "05_Body_ES108",
+    standardCushion: "06_Metal_Cushion_ES108",
+    singleCushion: "07_Singel_Cushion_ES108",
+  },
+};
+
+// Via globalThis so this doesn't reference the (TDZ'd) local `Object` binding
+// declared below, which shadows the global.
+const objectEntries = globalThis.Object.entries;
+
+const Object = forwardRef(function Object({ variant, armrestOption = "standard" }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
   const dimensionPlatesRef = useRef({});
   const rulerMeshesRef = useRef({});
 
-  // Model parts, exposed outside the effect via refs
+  // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
+  const partsRef = useRef({});
   const modelRef = useRef(null);
-  const model_104 = useRef(null);
-  const model_108 = useRef(null);
-  const armFrameRef = useRef(null);
-  const armCushionRef = useRef(null);
-  const chairBodyRef = useRef(null);
-  const legsRef = useRef([]);
 
   const [loaded, setLoaded] = useState(false);
   // Enables user interaction to trigger the preset angles
@@ -80,7 +106,18 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+    // Without tone mapping so IBL reflections don't clip straight to white
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.7;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
+
+    // Environment map so metallic/chrome parts have something to reflect -
+    // without it PBR metals render near-black under direct lights alone.
+    // A higher blur (sigma) keeps reflections soft instead of mirror-sharp hotspots.
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmremGenerator.dispose();
 
     // Lightning
     scene.add(new THREE.AmbientLight(0xffffff, 1));
@@ -208,21 +245,23 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
       (gltf) => {
         const model = gltf.scene;
         modelRef.current = model;
-        // Main models
-        model_104.current = model.getObjectByName("Chair_ES104_Root");
-        model_108.current = model.getObjectByName("Chair_ES108_Root");
-
-        armFrameRef.current = model.getObjectByName("arm_frame");
-        armCushionRef.current = model.getObjectByName("arm_cushion");
-        chairBodyRef.current = model.getObjectByName("body");
-
-        const legsGroup = model.getObjectByName("bottom_leg_1");
-        legsRef.current = legsGroup ? legsGroup.children : [];
+        // Resolve every named part for every variant from CHAIR_PARTS.
+        for (const [variantKey, partNames] of objectEntries(CHAIR_PARTS)) {
+          const parts = {};
+          for (const [partKey, objectName] of objectEntries(partNames)) {
+            parts[partKey] = model.getObjectByName(objectName);
+          }
+          partsRef.current[variantKey] = parts;
+        }
 
         scene.add(model);
         setLoaded(true);
 
         // --- Dimensions ---
+        // --- Model 104 ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
+
         // Define positions in lines
         const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
         const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
@@ -266,17 +305,24 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
         scene.add(plateHeight108.group);
 
         // Hide all lines and measures (default behaviour)
-        dimensionPlatesRef.current = {
-          ES104: [plateDepth104, plateWidth104, plateHeight104],
-          ES108: [plateDepth108, plateWidth108, plateHeight108],
-        };
-        rulerMeshesRef.current = {
-          ES104: [linjal104].filter(Boolean),
-          ES108: [linjal108].filter(Boolean),
-        };
+        dimensionPlatesRef.current = [
+          plateDepth104,
+          plateWidth104,
+          plateHeight104,
+          plateDepth108,
+          plateWidth108,
+          plateHeight108,
+        ];
 
-        // Hide all measures (default)
-        applyRulerVisibility(false, variant);
+        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
+
+        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
+        dimensionPlatesRef.current.forEach(
+          (plate) => (plate.group.visible = false),
+        );
+
+        console.log("108 plate pos:", plateDepth108.group.position);
+
       },
       undefined,
       (error) => {
@@ -326,12 +372,25 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
     resizeObserver.observe(container);
   }, []);
 
-  // Listens to viariant prop for changes, and re-applies once the model finishes loading
+  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
   useEffect(() => {
-    if (!model_104.current || !model_108.current) return;
-    model_104.current.visible = variant === "ES104";
-    model_108.current.visible = variant === "ES108";
-  }, [variant, loaded]);
+    if (!loaded) return;
+
+    for (const [variantKey, parts] of objectEntries(partsRef.current)) {
+      const isActiveVariant = variantKey === variant;
+      parts.root.visible = isActiveVariant;
+      if (!isActiveVariant) continue;
+
+      parts.standardArmrest.visible = armrestOption === "standard";
+      parts.singleArmrest.visible = armrestOption === "single";
+      parts.noArmrest.visible = armrestOption === "none";
+
+      // Cushion height depends on the armrest variant (see model.md):
+      // the single cushion pairs with both the single-armrest and no-armrest looks.
+      parts.standardCushion.visible = armrestOption === "standard";
+      parts.singleCushion.visible = armrestOption !== "standard";
+    }
+  }, [variant, armrestOption, loaded]);
 
   useEffect(() => {
     // Guard
