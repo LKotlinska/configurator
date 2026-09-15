@@ -11,6 +11,10 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./createDimension";
+import { TEXTURES } from "../config/materials";
+
+// Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
+const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
 
 
 // Object names as they exist in chair.glb, keyed by variant (see model description).
@@ -41,7 +45,10 @@ const CHAIR_PARTS = {
 // declared below, which shadows the global.
 const objectEntries = globalThis.Object.entries;
 
-const Object = forwardRef(function Object({ variant, armrestOption = "standard" }, ref) {
+const Object = forwardRef(function Object(
+  { variant, armrestOption = "standard", material = "fabric", color = "cream" },
+  ref,
+) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
   const dimensionPlatesRef = useRef([]);
@@ -50,6 +57,8 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
   const modelRef = useRef(null);
+  const textureLoaderRef = useRef(null);
+  const textureCacheRef = useRef({});
 
   const [loaded, setLoaded] = useState(false);  
 // Enables user interaction to trigger the preset angles
@@ -241,6 +250,17 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
           partsRef.current[variantKey] = parts;
         }
 
+        // Clone upholstery materials so texture swaps below don't mutate
+        // materials that the source GLB may share across meshes/variants.
+        for (const [, parts] of objectEntries(partsRef.current)) {
+          for (const partKey of UPHOLSTERY_PARTS) {
+            const mesh = parts[partKey];
+            if (mesh?.material) {
+              mesh.material = mesh.material.clone();
+            }
+          }
+        }
+
         scene.add(model);
         setLoaded(true);
 
@@ -363,6 +383,43 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
       parts.singleCushion.visible = armrestOption === "single";
     }
   }, [variant, armrestOption, loaded]);
+
+  // Applies the selected material/color texture to every upholstery mesh,
+  // across both variants, so the choice survives switching variant/armrest.
+  useEffect(() => {
+    if (!loaded) return;
+
+    const src = TEXTURES[material]?.[color];
+    if (!src) return;
+
+    function applyTexture(texture) {
+      for (const [, parts] of objectEntries(partsRef.current)) {
+        for (const partKey of UPHOLSTERY_PARTS) {
+          const mesh = parts[partKey];
+          if (mesh?.material) {
+            mesh.material.map = texture;
+            mesh.material.needsUpdate = true;
+          }
+        }
+      }
+    }
+
+    const cacheKey = `${material}-${color}`;
+    const cached = textureCacheRef.current[cacheKey];
+    if (cached) {
+      applyTexture(cached);
+      return;
+    }
+
+    if (!textureLoaderRef.current) {
+      textureLoaderRef.current = new THREE.TextureLoader();
+    }
+    textureLoaderRef.current.load(src, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textureCacheRef.current[cacheKey] = texture;
+      applyTexture(texture);
+    });
+  }, [material, color, loaded]);
 
 
   return (
