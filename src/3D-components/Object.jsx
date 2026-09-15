@@ -162,9 +162,9 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
 
     // --- Preset angles ---
     const presets = {
-      angle1: new THREE.Vector3(0, 1, 3),
-      angle2: new THREE.Vector3(3, 1, 0),
-      angle3: new THREE.Vector3(-2, 2, 2),
+      angle1: new THREE.Vector3(-2, 2, 2),
+      angle2: new THREE.Vector3(0, 2, 0.5),
+      angle3: new THREE.Vector3(2, 2, 2),
     };
 
     function goToPreset(pos, animated = true) {
