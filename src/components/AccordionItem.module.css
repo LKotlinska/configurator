@@ -1,6 +1,17 @@
 .accordion {
   cursor: pointer;
   margin: 1em 0;
+  interpolate-size: allow-keywords;
+}
+
+.accordion::details-content {
+  height: 0;
+  overflow: clip;
+  transition: height 0.3s ease, content-visibility 0.3s allow-discrete;
+}
+
+.accordion[open]::details-content {
+  height: auto;
 }
 
 .summary {
