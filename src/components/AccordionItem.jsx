@@ -8,7 +8,6 @@ export default function AccordionItem({ title, children }) {
                 <span aria-hidden='true' className="material-symbols-outlined">stat_minus_1</span>
             </summary>
             <div className={styles.content}>{children}
-                <h2>This is some content</h2>
             </div>
         </details>
     )

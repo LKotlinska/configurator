@@ -2,7 +2,7 @@ import AccordionItem from "../components/AccordionItem";
 import Button from "../components/Button";
 import Link from "../components/Link";
 import styles from "./ProductBlock.module.css"
-import ModelVariant from "../components/ModelVariant";
+import FootVariant from "../components/FootVariant";
 
 export default function ProductBlock({ variant, onVariantChange, showConfig, onToggle }) {
     return(
@@ -20,14 +20,18 @@ export default function ProductBlock({ variant, onVariantChange, showConfig, onT
                     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
                     <span className={styles.priceTag}>2 799 £</span>
 
-                    <ModelVariant variant={variant} onChange={onVariantChange} />
-
+                    <AccordionItem 
+                        title="Foot"
+                        children={
+                            <FootVariant 
+                                variant={variant} 
+                                onChange={onVariantChange} 
+                        />}
+                    />            
+                    
                     <AccordionItem 
                         title="Armrest"
                     />
-                    <AccordionItem 
-                        title="Foot"
-                    />            
                     <AccordionItem 
                         title="Material"
                     />            

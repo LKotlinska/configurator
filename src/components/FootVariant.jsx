@@ -1,11 +1,10 @@
-import styles from './ModelVariant.module.css'
+import styles from './FootVariant.module.css'
 import preview104 from '../assets/previews/preview_ES104.jpg'
 import preview108 from '../assets/previews/preview_ES108.jpg'
 
-export default function ModelVariant({ variant, onChange }) {
+export default function FootVariant({ variant, onChange }) {
     return (
         <div>
-            <h3>Variant</h3>
             <label htmlFor="model-104">
                 <input
                     className={styles.variantInput}
