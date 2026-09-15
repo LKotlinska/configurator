@@ -1,11 +1,29 @@
+import { useRef } from "react";
 import styles from "./ModelBlock.module.css";
 import Chair from "../3D-components/Object";
+import ObjectMenu from "../components/ObjectMenu";
 
-export default function ModelBlock({ variant }) {
+export default function ModelBlock({ variant, showConfig, onToggle }) {
+  const chairRef = useRef(null);
+
+  function handleAngleSelect(key) {
+    chairRef.current?.goToPreset(key);
+  }
+
+  function toggleRuler(visible) {
+    chairRef.current?.setRulerVisible(visible);
+  }
+
   return (
     <section className={styles.modelBlock}>
-      <Chair variant={variant} />
+      <Chair ref={chairRef} variant={variant}/>
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
+      <ObjectMenu
+        onAngleSelect={handleAngleSelect}
+        onRulerToggle={toggleRuler}
+        showConfig={showConfig}
+        onToggle={onToggle}
+      />
     </section>
   );
 }

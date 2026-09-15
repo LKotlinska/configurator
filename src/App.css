@@ -17,3 +17,31 @@ h6 {
   display: flex;
   position: relative;
 }
+
+.content {
+  flex: 1.2;
+  min-width: 0;
+  padding-right: var(--product-panel-width);
+  box-sizing: border-box;
+  transition: padding-right 0.5s ease;
+  overflow: hidden;
+}
+
+.content--expanded {
+  padding-right: 0;
+}
+
+.environmentImage {
+  width: 100vw;
+  height: auto;
+  display: block;
+  transition: object-position 0.5s ease;
+}
+
+.img--collapsed {
+  object-position: calc(var(--product-panel-width) / -3) center;
+}
+
+.img--expanded {
+  object-position: center;
+}

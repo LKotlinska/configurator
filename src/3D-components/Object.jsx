@@ -1,8 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CHAIR_URL } from "../config/models";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { createDimension } from "./createDimension";
+
 
 // Object names as they exist in chair.glb, keyed by variant (see model description).
 const CHAIR_PARTS = {
@@ -28,14 +37,36 @@ const CHAIR_PARTS = {
   },
 };
 
-function Chair({ variant, armrestOption = "standard" }) {
+// Via globalThis so this doesn't reference the (TDZ'd) local `Object` binding
+// declared below, which shadows the global.
+const objectEntries = globalThis.Object.entries;
+
+const Object = forwardRef(function Object({ variant, armrestOption = "standard" }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
+  const dimensionPlatesRef = useRef([]);
+  const rulerMeshesRef = useRef([]);
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
+  const modelRef = useRef(null);
 
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(false);  
+// Enables user interaction to trigger the preset angles
+  const goToPresetRef = useRef(null);
+
+  // Exposes 'goToPreset' to whichever parent holds a ref to this component
+  useImperativeHandle(ref, () => ({
+    goToPreset: (key) => goToPresetRef.current?.(key),
+    setRulerVisible: (visible) => {
+      rulerMeshesRef.current.forEach((mesh) => {
+        mesh.visible = visible;
+      });
+      dimensionPlatesRef.current.forEach((plate) => {
+        plate.group.visible = visible;
+      });
+    },
+  }));
 
   useEffect(() => {
     // Solved double rendering
@@ -56,7 +87,8 @@ function Chair({ variant, armrestOption = "standard" }) {
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 1, 3);
+    // camera.position.set(0, 1, 3);
+    camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,23 +107,135 @@ function Chair({ variant, armrestOption = "standard" }) {
     pmremGenerator.dispose();
 
     // Lightning
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const dir = new THREE.DirectionalLight(0xffffff, 1);
-    dir.position.set(5, 10, 5);
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    const dir = new THREE.DirectionalLight(0xffffff, 2);
     scene.add(dir);
+    scene.add(dir.target);
+
+    // --- OrbitControls setup (independent of the model, so set up immediately) ---
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableRotate = false; // user can't rotate object by clicking on canvas
+    controls.enableZoom = true; // zoom handled by OrbitControls
+    controls.enablePan = false; // don't let the user pan the object away
+    controls.minDistance = 1.5; // zoom limit
+    controls.maxDistance = 3; // zoom limit
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    // --- Raycasting for "user must click the object to rotate" ---
+    const raycaster = new THREE.Raycaster();
+    const pointerNDC = new THREE.Vector2();
+
+    function getPointerNDC(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    function onPointerDown(event) {
+      if (!modelRef.current) return; // model not loaded yet
+      getPointerNDC(event);
+      raycaster.setFromCamera(pointerNDC, camera);
+      const intersects = raycaster.intersectObject(modelRef.current, true);
+
+      if (intersects.length > 0) {
+        controls.enableRotate = true;
+        isDragging = true;
+        renderer.domElement.style.cursor = "grabbing";
+      }
+    }
+
+    function onPointerUp() {
+      controls.enableRotate = false; // turned off until next click on the object
+      isDragging = false;
+      renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
+    }
+
+    // Hover cursor
+    let isHovering = false;
+    let isDragging = false;
+
+    function onPointerMove(event) {
+      if (!modelRef.current) return; // model not loaded yet
+      if (isDragging) return; // Grabbing prior to hover
+
+      getPointerNDC(event);
+      raycaster.setFromCamera(pointerNDC, camera);
+      const intersects = raycaster.intersectObject(modelRef.current, true);
+
+      const nowHovering = intersects.length > 0;
+      if (nowHovering !== isHovering) {
+        isHovering = nowHovering;
+        renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
+      }
+    }
+
+    function onPointerLeave() {
+      isHovering = false;
+      renderer.domElement.style.cursor = "default";
+    }
+
+    // capture: true makes sure our raycast decision runs before OrbitControls' own pointerdown handler decides whether to start rotating
+    renderer.domElement.addEventListener("pointerdown", onPointerDown, {
+      capture: true,
+    });
+    renderer.domElement.addEventListener("pointerup", onPointerUp);
+    renderer.domElement.addEventListener("pointerleave", onPointerUp);
+    renderer.domElement.addEventListener("pointermove", onPointerMove);
+    renderer.domElement.addEventListener("pointerleave", onPointerLeave);
+
+    // --- Preset angles ---
+    const presets = {
+      angle1: new THREE.Vector3(0, 1, 3),
+      angle2: new THREE.Vector3(3, 1, 0),
+      angle3: new THREE.Vector3(-2, 2, 2),
+    };
+
+    function goToPreset(pos, animated = true) {
+      if (!animated) {
+        camera.position.copy(pos);
+        controls.update();
+        return;
+      }
+      const start = camera.position.clone();
+      const startTime = performance.now();
+      const duration = 500;
+
+      function step(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        camera.position.lerpVectors(start, pos, t);
+        controls.update();
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Expose so an outer menu component can call
+    goToPresetRef.current = (key) => goToPreset(presets[key]);
+
+    // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
+    const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
+
+    function updateLight() {
+      const rotatedOffset = lightOffset
+        .clone()
+        .applyQuaternion(camera.quaternion);
+      dir.position.copy(camera.position).add(rotatedOffset);
+      dir.target.position.copy(controls.target);
+      dir.target.updateMatrixWorld();
+    }
 
     // Loader
-
     const loader = new GLTFLoader();
     loader.load(
       CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
         const model = gltf.scene;
-
+        modelRef.current = model;
         // Resolve every named part for every variant from CHAIR_PARTS.
-        for (const [variantKey, partNames] of Object.entries(CHAIR_PARTS)) {
+        for (const [variantKey, partNames] of objectEntries(CHAIR_PARTS)) {
           const parts = {};
-          for (const [partKey, objectName] of Object.entries(partNames)) {
+          for (const [partKey, objectName] of objectEntries(partNames)) {
             parts[partKey] = model.getObjectByName(objectName);
           }
           partsRef.current[variantKey] = parts;
@@ -99,6 +243,67 @@ function Chair({ variant, armrestOption = "standard" }) {
 
         scene.add(model);
         setLoaded(true);
+
+        // --- Dimensions ---
+        // --- Model 104 ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
+
+        // Define positions in lines
+        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
+        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
+        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
+
+        // Create 3 dimension plates & append to scene
+        const plateDepth104 = createDimension("DEPTH104");
+        const plateWidth104 = createDimension("WIDTH104");
+        const plateHeight104 = createDimension("HEIGHT104");
+
+        plateDepth104.attachTo(linjal104, offsetDepth104);
+        plateWidth104.attachTo(linjal104, offsetWidth104);
+        plateHeight104.attachTo(linjal104, offsetHeight104);
+
+        scene.add(plateDepth104.group);
+        scene.add(plateWidth104.group);
+        scene.add(plateHeight104.group);
+
+        // --- Model 108 ---
+        const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
+
+        // Create 3 dimension plates & append to scene
+        const plateDepth108 = createDimension("DEPTH108");
+        const plateWidth108 = createDimension("WIDTH108");
+        const plateHeight108 = createDimension("HEIGHT108");
+
+        plateDepth108.attachTo(linjal108, offsetDepth108);
+        plateWidth108.attachTo(linjal108, offsetWidth108);
+        plateHeight108.attachTo(linjal108, offsetHeight108);
+
+        scene.add(plateDepth108.group);
+        scene.add(plateWidth108.group);
+        scene.add(plateHeight108.group);
+
+        // Hide all lines and measures (default behaviour)
+        dimensionPlatesRef.current = [
+          plateDepth104,
+          plateWidth104,
+          plateHeight104,
+          plateDepth108,
+          plateWidth108,
+          plateHeight108,
+        ];
+
+        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
+
+        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
+        dimensionPlatesRef.current.forEach(
+          (plate) => (plate.group.visible = false),
+        );
+
+        console.log("108 plate pos:", plateDepth108.group.position);
 
       },
       undefined,
@@ -111,12 +316,18 @@ function Chair({ variant, armrestOption = "standard" }) {
     let frameId;
     function animate() {
       frameId = requestAnimationFrame(animate);
+      controls.update();
+      updateLight();
+
+      // Append dimension plates
+      const plates = dimensionPlatesRef.current;
+      plates.forEach((plate) => plate.update(camera));
+
       renderer.render(scene, camera);
     }
     animate();
 
-    // Keeps size in sync with the container, including layout-only
-    // changes (e.g. flex resizing) that don't fire a window resize event
+    // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
@@ -137,7 +348,7 @@ function Chair({ variant, armrestOption = "standard" }) {
   useEffect(() => {
     if (!loaded) return;
 
-    for (const [variantKey, parts] of Object.entries(partsRef.current)) {
+    for (const [variantKey, parts] of objectEntries(partsRef.current)) {
       const isActiveVariant = variantKey === variant;
       parts.root.visible = isActiveVariant;
       if (!isActiveVariant) continue;
@@ -157,6 +368,6 @@ function Chair({ variant, armrestOption = "standard" }) {
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
   );
-}
+});
 
-export default Chair;
+export default Object;
