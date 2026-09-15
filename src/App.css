@@ -30,18 +30,3 @@ h6 {
 .content--expanded {
   padding-right: 0;
 }
-
-.environmentImage {
-  width: 100vw;
-  height: auto;
-  display: block;
-  transition: object-position 0.5s ease;
-}
-
-.img--collapsed {
-  object-position: calc(var(--product-panel-width) / -3) center;
-}
-
-.img--expanded {
-  object-position: center;
-}

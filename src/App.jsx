@@ -2,11 +2,12 @@ import { useState } from "react";
 import "./App.css";
 import ModelBlock from "./sections/ModelBlock";
 import ProductBlock from "./sections/ProductBlock";
+import Slideshow from "./sections/Slideshow";
 import Navigator from "./components/Navigator";
 
 function App() {
   const [showConfig, setShowConfig] = useState(true);
-  const [ variant, setVariant ] = useState("ES104");
+  const [variant, setVariant] = useState("ES104");
 
   return (
     <>
@@ -17,14 +18,15 @@ function App() {
             showConfig={showConfig}
             onToggle={() => setShowConfig(!showConfig)}
           />
-          <img
+          {/* <img
             className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
             src="./src/assets/test-img.webp"
-          ></img>
+          ></img> */}
+          <Slideshow showConfig={showConfig} />
         </div>
         <ProductBlock
-          variant={variant} 
-          onVariantChange={setVariant} 
+          variant={variant}
+          onVariantChange={setVariant}
           showConfig={showConfig}
           onToggle={() => setShowConfig(!showConfig)}
         />
