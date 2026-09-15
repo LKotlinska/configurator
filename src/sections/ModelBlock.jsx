@@ -11,7 +11,7 @@ export default function ModelBlock({ variant, armrestOption, showConfig, onToggl
   }
 
   function toggleRuler(visible) {
-    chairRef.current?.setRulerVisible(visible);
+    chairRef.current?.setRulerVisible(visible, variant);
   }
 
   return (
