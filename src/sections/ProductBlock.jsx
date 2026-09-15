@@ -11,6 +11,7 @@ import armrestNone104 from "../assets/previews/armrest_104/04_Singel_NOarmrest_E
 import armrestStandard108 from "../assets/previews/armrest_108/02_Armrest_Metal_ES108.png";
 import armrestSingle108 from "../assets/previews/armrest_108/03_Singel_Armrest_ES108.png";
 import armrestNone108 from "../assets/previews/armrest_108/04_Singel_NOarmrest_ES108.png";
+import { MATERIALS, COLORS, TEXTURES } from "../config/materials";
 
 const FOOT_OPTIONS = [
     { id: "model-104", value: "ES104", label: "ES104", image: wheels104 },
@@ -30,7 +31,27 @@ const ARMREST_OPTIONS_BY_VARIANT = {
     ],
 };
 
-export default function ProductBlock({ variant, onVariantChange, armrestOption, onArmrestChange, showConfig, onToggle }) {
+const MATERIAL_OPTIONS = MATERIALS.map((name) => ({
+    id: `material-${name}`,
+    value: name,
+    label: name.charAt(0).toUpperCase() + name.slice(1),
+}));
+
+const colorOptionsForMaterial = (material) =>
+    COLORS.map((name) => ({
+        id: `color-${material}-${name}`,
+        value: name,
+        label: name.charAt(0).toUpperCase() + name.slice(1),
+        image: TEXTURES[material][name],
+    }));
+
+export default function ProductBlock({
+    variant, onVariantChange,
+    armrestOption, onArmrestChange,
+    material, onMaterialChange,
+    color, onColorChange,
+    showConfig, onToggle,
+}) {
     return(
         <section className={`${styles.productSection} ${!showConfig ? styles.collapsed : ""}`}>
             <span className={styles.triggerContainer} onClick={onToggle}>
@@ -42,8 +63,8 @@ export default function ProductBlock({ variant, onVariantChange, armrestOption, 
             <div className={styles.collapseInner}>
                 <article>
                     <span className={styles.caption}>Configurator</span>
-                    <h2 className={styles.modelTitle}>Elegant Armchair</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
+                    <h2 className={styles.modelTitle}>Meridian Chair</h2>
+                    <p className={styles.description}>Clean lines and a balanced silhouette make the Meridian equally at home in the boardroom or the home office. A sculpted frame and supportive seat keep you comfortable through long working days, while a smooth-rolling base or a sturdy fixed foot make it easy to move between meetings or settle in for focused work. Choose your base, armrests, and upholstery to match the room.</p>
                     <span className={styles.priceTag}>2 799 £</span>
 
                     <AccordionItem 
@@ -68,8 +89,27 @@ export default function ProductBlock({ variant, onVariantChange, armrestOption, 
                             />
                         }
                     />
-                    <AccordionItem 
+                    <AccordionItem
+                        title="Material"
+                        children={
+                            <VariantSwatches
+                                name={"material-variant"}
+                                options={MATERIAL_OPTIONS}
+                                selected={material}
+                                onChange={onMaterialChange}
+                            />
+                        }
+                    />
+                    <AccordionItem
                         title="Colour"
+                        children={
+                            <VariantSwatches
+                                name={"color-variant"}
+                                options={colorOptionsForMaterial(material)}
+                                selected={color}
+                                onChange={onColorChange}
+                            />
+                        }
                     />
 
                     <div className={styles.statusContainer}>

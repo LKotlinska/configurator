@@ -14,7 +14,11 @@ export default function VariantSwatches({ name, options = [], selected, onChange
                         checked={selected === value}
                         onChange={() => onChange(value)}
                     />
-                    <img className={styles.variantImg} src={image} alt={label ?? value} />
+                    {image ? (
+                        <img className={styles.variantImg} src={image} alt={label ?? value} />
+                    ) : (
+                        <span className={styles.variantLabel}>{label ?? value}</span>
+                    )}
                 </label>
             ))}
         </div>
