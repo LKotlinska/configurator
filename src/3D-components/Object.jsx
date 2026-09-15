@@ -124,7 +124,7 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
     function onPointerUp() {
       controls.enableRotate = false; // turned off until next click on the object
       isDragging = false;
-      renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
+      renderer.domElement.style.cursor = isHovering ? "grab" : "default";
     }
 
     // Hover cursor
@@ -142,7 +142,7 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
       const nowHovering = intersects.length > 0;
       if (nowHovering !== isHovering) {
         isHovering = nowHovering;
-        renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
+        renderer.domElement.style.cursor = isHovering ? "grab" : "default";
       }
     }
 
