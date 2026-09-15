@@ -98,7 +98,7 @@ const ChairModel = forwardRef(function ChairModel(
 
     // Create scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xd3d3d3);
+    scene.background = new THREE.Color(0xFBF9F3);
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
@@ -381,10 +381,10 @@ const ChairModel = forwardRef(function ChairModel(
       parts.singleArmrest.visible = armrestOption === "single";
       parts.noArmrest.visible = armrestOption === "none";
 
-      // Cushion height depends on the armrest variant (see model.md):
-      // the single cushion pairs with both the single-armrest and no-armrest looks.
+      // Cushion height depends on the armrest variant (see model.md).
+      // No armrest means no armrest cushion either.
       parts.standardCushion.visible = armrestOption === "standard";
-      parts.singleCushion.visible = armrestOption !== "standard";
+      parts.singleCushion.visible = armrestOption === "single";
     }
   }, [variant, armrestOption, loaded]);
 

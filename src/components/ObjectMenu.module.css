@@ -12,10 +12,10 @@
   height: 6vh;
 }
 
-article img {
+.objectMenu article img {
   height: 6vh;
 }
 
-article :first-child {
+.objectMenu article :first-child {
   display: inline-block;
 }
