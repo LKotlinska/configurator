@@ -26,8 +26,8 @@ const Object = forwardRef(function Object({ variant }, ref) {
   const chairBodyRef = useRef(null);
   const legsRef = useRef([]);
 
-  const [loaded, setLoaded] = useState(false);  
-// Enables user interaction to trigger the preset angles
+  const [loaded, setLoaded] = useState(false);
+  // Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
   // Exposes 'goToPreset' to whichever parent holds a ref to this component
@@ -226,9 +226,9 @@ const Object = forwardRef(function Object({ variant }, ref) {
         const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
 
         // Create 3 dimension plates & append to scene
-        const plateDepth104 = createDimension("DEPTH104");
-        const plateWidth104 = createDimension("WIDTH104");
-        const plateHeight104 = createDimension("HEIGHT104");
+        const plateDepth104 = createDimension("69,5");
+        const plateWidth104 = createDimension("68,3");
+        const plateHeight104 = createDimension("83,7");
 
         plateDepth104.attachTo(linjal104, offsetDepth104);
         plateWidth104.attachTo(linjal104, offsetWidth104);
@@ -242,9 +242,9 @@ const Object = forwardRef(function Object({ variant }, ref) {
         const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
         // Create 3 dimension plates & append to scene
-        const plateDepth108 = createDimension("DEPTH108");
-        const plateWidth108 = createDimension("WIDTH108");
-        const plateHeight108 = createDimension("HEIGHT108");
+        const plateDepth108 = createDimension("69,1");
+        const plateWidth108 = createDimension("68,3");
+        const plateHeight108 = createDimension("83,7");
 
         plateDepth108.attachTo(linjal108, offsetDepth108);
         plateWidth108.attachTo(linjal108, offsetWidth108);
@@ -327,7 +327,6 @@ const Object = forwardRef(function Object({ variant }, ref) {
     model_104.current.visible = variant === "ES104";
     model_108.current.visible = variant === "ES108";
   }, [variant, loaded]);
-
 
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
