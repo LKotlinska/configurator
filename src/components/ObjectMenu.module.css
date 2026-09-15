@@ -1,5 +1,5 @@
 .objectMenu {
-  height: 24vh;
+  height: 12rem;
   position: absolute;
   bottom: 2vh;
   left: 2vw;
@@ -9,11 +9,12 @@
 .rulerMenu,
 .screenMenu,
 .dimensionMenu {
-  height: 6vh;
+  height: 3rem;
 }
 
 article img {
-  height: 6vh;
+  height: 3rem;
+  cursor: pointer;
 }
 
 article :first-child {
