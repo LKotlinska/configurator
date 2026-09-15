@@ -95,7 +95,7 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
     controls.enablePan = false; // don't let the user pan the object away
     controls.minDistance = 1.5; // zoom limit
     controls.maxDistance = 3; // zoom limit
-    controls.target.set(0, 0, 0);
+    controls.target.set(0, 0.4, 0);
     controls.update();
 
     // --- Raycasting for "user must click the object to rotate" ---
