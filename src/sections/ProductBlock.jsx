@@ -2,10 +2,9 @@ import AccordionItem from "../components/AccordionItem";
 import Button from "../components/Button";
 import Link from "../components/Link";
 import styles from "./ProductBlock.module.css"
-import FootVariant from "../components/FootVariant";
 import VariantSwatches from "../components/VariantSwatches";
-import preview104 from "../assets/previews/preview_ES104.jpg";
-import preview108 from "../assets/previews/preview_ES108.jpg";
+import wheels104 from "../assets/previews/wheels_ES104.png";
+import base108 from "../assets/previews/base_ES108.png";
 import armrestStandard104 from "../assets/previews/armrest_104/02_Armrest_Metal_ES104.png";
 import armrestSingle104 from "../assets/previews/armrest_104/03_Singel_Armrest_ES104.png";
 import armrestNone104 from "../assets/previews/armrest_104/04_Singel_NOarmrest_ES104.png";
@@ -14,8 +13,8 @@ import armrestSingle108 from "../assets/previews/armrest_108/03_Singel_Armrest_E
 import armrestNone108 from "../assets/previews/armrest_108/04_Singel_NOarmrest_ES108.png";
 
 const FOOT_OPTIONS = [
-    { id: "model-104", value: "ES104", label: "ES104", image: preview104 },
-    { id: "model-108", value: "ES108", label: "ES108", image: preview108 },
+    { id: "model-104", value: "ES104", label: "ES104", image: wheels104 },
+    { id: "model-108", value: "ES108", label: "ES108", image: base108 },
 ];
 
 const ARMREST_OPTIONS_BY_VARIANT = {
