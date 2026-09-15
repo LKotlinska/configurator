@@ -11,7 +11,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./createDimension";
-import { TEXTURES } from "../config/materials";
+import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -57,8 +57,10 @@ const Object = forwardRef(function Object(
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
   const modelRef = useRef(null);
-  const textureLoaderRef = useRef(null);
-  const textureCacheRef = useRef({});
+  // gltf.functions.selectVariant, exposed by the KHR_materials_variants
+  // loader plugin, used to switch a mesh to one of the GLB's baked-in
+  // material variants (fabric_cream, leather_earth, ...).
+  const selectVariantRef = useRef(null);
 
   const [loaded, setLoaded] = useState(false);  
 // Enables user interaction to trigger the preset angles
@@ -236,11 +238,13 @@ const Object = forwardRef(function Object(
 
     // Loader
     const loader = new GLTFLoader();
+    loader.register((parser) => new GLTFMaterialsVariantsExtension(parser));
     loader.load(
       CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
         const model = gltf.scene;
         modelRef.current = model;
+        selectVariantRef.current = gltf.functions?.selectVariant ?? null;
         // Resolve every named part for every variant from CHAIR_PARTS.
         for (const [variantKey, partNames] of objectEntries(CHAIR_PARTS)) {
           const parts = {};
@@ -248,17 +252,6 @@ const Object = forwardRef(function Object(
             parts[partKey] = model.getObjectByName(objectName);
           }
           partsRef.current[variantKey] = parts;
-        }
-
-        // Clone upholstery materials so texture swaps below don't mutate
-        // materials that the source GLB may share across meshes/variants.
-        for (const [, parts] of objectEntries(partsRef.current)) {
-          for (const partKey of UPHOLSTERY_PARTS) {
-            const mesh = parts[partKey];
-            if (mesh?.material) {
-              mesh.material = mesh.material.clone();
-            }
-          }
         }
 
         scene.add(model);
@@ -384,41 +377,22 @@ const Object = forwardRef(function Object(
     }
   }, [variant, armrestOption, loaded]);
 
-  // Applies the selected material/color texture to every upholstery mesh,
-  // across both variants, so the choice survives switching variant/armrest.
+  // Switches every upholstery mesh, across both variants, to the GLB's
+  // baked-in material variant for the selected material/color (e.g.
+  // "fabric_cream" — see model.md section 6) so the choice survives
+  // switching variant/armrest afterwards.
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !selectVariantRef.current) return;
 
-    const src = TEXTURES[material]?.[color];
-    if (!src) return;
-
-    function applyTexture(texture) {
-      for (const [, parts] of objectEntries(partsRef.current)) {
-        for (const partKey of UPHOLSTERY_PARTS) {
-          const mesh = parts[partKey];
-          if (mesh?.material) {
-            mesh.material.map = texture;
-            mesh.material.needsUpdate = true;
-          }
+    const variantName = `${material}_${color}`;
+    for (const [, parts] of objectEntries(partsRef.current)) {
+      for (const partKey of UPHOLSTERY_PARTS) {
+        const mesh = parts[partKey];
+        if (mesh) {
+          selectVariantRef.current(mesh, variantName, false);
         }
       }
     }
-
-    const cacheKey = `${material}-${color}`;
-    const cached = textureCacheRef.current[cacheKey];
-    if (cached) {
-      applyTexture(cached);
-      return;
-    }
-
-    if (!textureLoaderRef.current) {
-      textureLoaderRef.current = new THREE.TextureLoader();
-    }
-    textureLoaderRef.current.load(src, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
-      textureCacheRef.current[cacheKey] = texture;
-      applyTexture(texture);
-    });
   }, [material, color, loaded]);
 
 
