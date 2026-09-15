@@ -1,14 +1,15 @@
 .accordion {
-  border-bottom: 1px solid #ddd;
   cursor: pointer;
   margin: 1em 0;
 }
 
 .summary {
+  border-bottom: 1px solid #ddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
   list-style: none; /* removes default marker in Firefox */
+  padding: 0.25em 0;
 }
 
 /* removes default marker in Chrome/Safari */
@@ -19,4 +20,16 @@
 .title {
   font-size: var(--font-size-lg);
   font-weight: 700;
+}
+
+.symbol {
+  transition: transform 0.2s ease;
+}
+
+.accordion[open] > .summary > .symbol {
+  transform: rotate(180deg);
+}
+
+.content {
+  padding: 0.75em 0;
 }
