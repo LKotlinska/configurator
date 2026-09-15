@@ -83,7 +83,7 @@ const Object = forwardRef(function Object({ variant, armrestOption = "standard" 
 
     // Create scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xd3d3d3);
+    scene.background = new THREE.Color(0xFBF9F3);
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);

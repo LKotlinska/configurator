@@ -9,6 +9,7 @@
   height: 8em;
   cursor: pointer;
   border: 2px solid transparent;
+  background-color: var(--color-preview);
 }
 
 .variantInput:checked + .variantImg {
