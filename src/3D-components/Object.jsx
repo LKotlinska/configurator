@@ -93,7 +93,7 @@ const ChairModel = forwardRef(function ChairModel({ variant }, ref) {
     controls.enableRotate = false; // user can't rotate object by clicking on canvas
     controls.enableZoom = true; // zoom handled by OrbitControls
     controls.enablePan = false; // don't let the user pan the object away
-    controls.minDistance = 1.5; // zoom limit
+    controls.minDistance = 1; // zoom limit
     controls.maxDistance = 3; // zoom limit
     controls.target.set(0, 0.4, 0);
     controls.update();
