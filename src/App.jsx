@@ -6,15 +6,28 @@ import Navigator from "./components/Navigator";
 
 function App() {
   const [showConfig, setShowConfig] = useState(true);
+  const [ variant, setVariant ] = useState("ES104");
 
   return (
     <>
       <main className="divider">
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
-          <ModelBlock/>
-          <img className={showConfig ? 'img--collapsed' : 'img--expanded'} src="./src/assets/test-img.webp"></img>
+          <ModelBlock
+            variant={variant}
+            showConfig={showConfig}
+            onToggle={() => setShowConfig(!showConfig)}
+          />
+          <img
+            className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
+            src="./src/assets/test-img.webp"
+          ></img>
         </div>
-        <ProductBlock showConfig={showConfig} onToggle={() => setShowConfig(!showConfig)}/>
+        <ProductBlock
+          variant={variant} 
+          onVariantChange={setVariant} 
+          showConfig={showConfig}
+          onToggle={() => setShowConfig(!showConfig)}
+        />
         <Navigator />
       </main>
     </>

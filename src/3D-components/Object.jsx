@@ -8,25 +8,64 @@ import {
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { CHAIR_URL } from "../config/models";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { createDimension } from "./createDimension";
 
-const Object = forwardRef(function Object(props, ref) {
+
+// Object names as they exist in chair.glb, keyed by variant (see model description).
+const CHAIR_PARTS = {
+  ES104: {
+    root: "Chair_ES104_Root",
+    base: "01_Base_metal_W_wheels_ES104",
+    standardArmrest: "02_Armrest_Metal_ES104",
+    singleArmrest: "03_Singel_Armrest_ES104",
+    noArmrest: "04_Singel_NOarmrest_ES104",
+    body: "05_Body_ES104",
+    standardCushion: "06_Metal_Cushion_ES104",
+    singleCushion: "07_Singel_Cushion_ES104",
+  },
+  ES108: {
+    root: "Chair_ES108_Root",
+    base: "01_Base_metal_ES108",
+    standardArmrest: "02_Armrest_Metal_ES108",
+    singleArmrest: "03_Singel_Armrest_ES108",
+    noArmrest: "04_Singel_NOarmrest_ES108",
+    body: "05_Body_ES108",
+    standardCushion: "06_Metal_Cushion_ES108",
+    singleCushion: "07_Singel_Cushion_ES108",
+  },
+};
+
+// Via globalThis so this doesn't reference the (TDZ'd) local `Object` binding
+// declared below, which shadows the global.
+const objectEntries = globalThis.Object.entries;
+
+const Object = forwardRef(function Object({ variant, armrestOption = "standard" }, ref) {
   const containerRef = useRef(null);
   const initialized = useRef(false);
+  const dimensionPlatesRef = useRef([]);
+  const rulerMeshesRef = useRef([]);
 
-  // Model parts, exposed outside the effect via refs
+  // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
+  const partsRef = useRef({});
   const modelRef = useRef(null);
-  const armFrameRef = useRef(null);
-  const armCushionRef = useRef(null);
-  const chairBodyRef = useRef(null);
-  const legsRef = useRef([]);
 
-  // Enables user interaction to trigger the preset angles
+  const [loaded, setLoaded] = useState(false);  
+// Enables user interaction to trigger the preset angles
   const goToPresetRef = useRef(null);
 
-  // Exposes goToPreset(key) to whichever parent holds a ref to this component,
-  // e.g. <Object ref={objectRef} /> then objectRef.current.goToPreset("angle1")
+  // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
+    setRulerVisible: (visible) => {
+      rulerMeshesRef.current.forEach((mesh) => {
+        mesh.visible = visible;
+      });
+      dimensionPlatesRef.current.forEach((plate) => {
+        plate.group.visible = visible;
+      });
+    },
   }));
 
   useEffect(() => {
@@ -54,7 +93,18 @@ const Object = forwardRef(function Object(props, ref) {
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+    // Without tone mapping so IBL reflections don't clip straight to white
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.7;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
+
+    // Environment map so metallic/chrome parts have something to reflect -
+    // without it PBR metals render near-black under direct lights alone.
+    // A higher blur (sigma) keeps reflections soft instead of mirror-sharp hotspots.
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmremGenerator.dispose();
 
     // Lightning
     scene.add(new THREE.AmbientLight(0xffffff, 1));
@@ -90,18 +140,25 @@ const Object = forwardRef(function Object(props, ref) {
 
       if (intersects.length > 0) {
         controls.enableRotate = true;
+        isDragging = true;
+        renderer.domElement.style.cursor = "grabbing";
       }
     }
 
     function onPointerUp() {
       controls.enableRotate = false; // turned off until next click on the object
+      isDragging = false;
+      renderer.domElement.style.cursor = isHovering ? "pointer" : "default";
     }
 
     // Hover cursor
     let isHovering = false;
+    let isDragging = false;
 
     function onPointerMove(event) {
-      if (!modelRef.current) return;
+      if (!modelRef.current) return; // model not loaded yet
+      if (isDragging) return; // Grabbing prior to hover
+
       getPointerNDC(event);
       raycaster.setFromCamera(pointerNDC, camera);
       const intersects = raycaster.intersectObject(modelRef.current, true);
@@ -118,8 +175,7 @@ const Object = forwardRef(function Object(props, ref) {
       renderer.domElement.style.cursor = "default";
     }
 
-    // capture: true makes sure our raycast decision runs before OrbitControls'
-    // own pointerdown handler decides whether to start rotating
+    // capture: true makes sure our raycast decision runs before OrbitControls' own pointerdown handler decides whether to start rotating
     renderer.domElement.addEventListener("pointerdown", onPointerDown, {
       capture: true,
     });
@@ -154,7 +210,7 @@ const Object = forwardRef(function Object(props, ref) {
       requestAnimationFrame(step);
     }
 
-    // Expose so an outer menu component can call e.g. goToPresetRef.current(presets.angle1)
+    // Expose so an outer menu component can call
     goToPresetRef.current = (key) => goToPreset(presets[key]);
 
     // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
@@ -172,104 +228,83 @@ const Object = forwardRef(function Object(props, ref) {
     // Loader
     const loader = new GLTFLoader();
     loader.load(
-      // "/chairTest2.glb", // <--- <--- <--- PUT PERMANENT FILE HERE!!!!
-      "/chair.glb",
+      CHAIR_URL, // Link to file on vercel blob
       (gltf) => {
-        // console.log(gltf);
         const model = gltf.scene;
-
         modelRef.current = model;
-        armFrameRef.current = model.getObjectByName("arm_frame");
-        armCushionRef.current = model.getObjectByName("arm_cushion");
-        chairBodyRef.current = model.getObjectByName("body");
-        console.log(chairBodyRef);
-        const legsGroup = model.getObjectByName("bottom_leg_1");
-        legsRef.current = legsGroup ? legsGroup.children : [];
+        // Resolve every named part for every variant from CHAIR_PARTS.
+        for (const [variantKey, partNames] of objectEntries(CHAIR_PARTS)) {
+          const parts = {};
+          for (const [partKey, objectName] of objectEntries(partNames)) {
+            parts[partKey] = model.getObjectByName(objectName);
+          }
+          partsRef.current[variantKey] = parts;
+        }
 
         scene.add(model);
+        setLoaded(true);
 
-        // // --------------- TEST!!! OLD CODE  -  TRY ORBIT CONTROL INSTEAD ---------------
-        // // --- Drag for rotation ---
-        // // States
-        // let isDragging = false;
-        // let isHovering = false;
+        // --- Dimensions ---
+        // --- Model 104 ---
+        // Fetch dimension lines in 3D object
+        const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
 
-        // // Save new position between each movement
-        // let previousPointer = { x: 0, y: 0 };
+        // Define positions in lines
+        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
+        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
+        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
 
-        // const raycaster = new THREE.Raycaster();
-        // const pointerNDC = new THREE.Vector2();
+        // Create 3 dimension plates & append to scene
+        const plateDepth104 = createDimension("DEPTH104");
+        const plateWidth104 = createDimension("WIDTH104");
+        const plateHeight104 = createDimension("HEIGHT104");
 
-        // // Convert coordinates
-        // function getPointerNDC(event) {
-        //   const rect = renderer.domElement.getBoundingClientRect();
-        //   pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        //   pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        // }
+        plateDepth104.attachTo(linjal104, offsetDepth104);
+        plateWidth104.attachTo(linjal104, offsetWidth104);
+        plateHeight104.attachTo(linjal104, offsetHeight104);
 
-        // // Initiate movement
-        // function onPointerDown(event) {
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
+        scene.add(plateDepth104.group);
+        scene.add(plateWidth104.group);
+        scene.add(plateHeight104.group);
 
-        //   if (intersects.length > 0) {
-        //     isDragging = true;
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //   }
-        // }
+        // --- Model 108 ---
+        const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
-        // // Rotation of object + cursor check
-        // function onPointerMove(event) {
-        //   if (isDragging) {
-        //     // Calculate distance of user interaction
-        //     const deltaX = event.clientX - previousPointer.x;
-        //     const deltaY = event.clientY - previousPointer.y;
+        // Create 3 dimension plates & append to scene
+        const plateDepth108 = createDimension("DEPTH108");
+        const plateWidth108 = createDimension("WIDTH108");
+        const plateHeight108 = createDimension("HEIGHT108");
 
-        //     model.rotation.y += deltaX * 0.01; // User movement in x-direction -> rotation on vertical direction
-        //     model.rotation.x += deltaY * 0.01; // User movement in y-direction -> rotation in horizontal direction
+        plateDepth108.attachTo(linjal108, offsetDepth108);
+        plateWidth108.attachTo(linjal108, offsetWidth108);
+        plateHeight108.attachTo(linjal108, offsetHeight108);
 
-        //     previousPointer.x = event.clientX;
-        //     previousPointer.y = event.clientY;
-        //     return; // Don't check for hover while already dragging
-        //   }
+        scene.add(plateDepth108.group);
+        scene.add(plateWidth108.group);
+        scene.add(plateHeight108.group);
 
-        //   // Hover-check. Hovering -> cursor pointer
-        //   getPointerNDC(event);
-        //   raycaster.setFromCamera(pointerNDC, camera);
-        //   const intersects = raycaster.intersectObject(model, true);
+        // Hide all lines and measures (default behaviour)
+        dimensionPlatesRef.current = [
+          plateDepth104,
+          plateWidth104,
+          plateHeight104,
+          plateDepth108,
+          plateWidth108,
+          plateHeight108,
+        ];
 
-        //   const nowHovering = intersects.length > 0;
-        //   if (nowHovering !== isHovering) {
-        //     isHovering = nowHovering;
-        //     renderer.domElement.style.cursor = isHovering
-        //       ? "pointer"
-        //       : "default";
-        //   }
-        // }
+        rulerMeshesRef.current = [linjal104, linjal108].filter(Boolean);
 
-        // function onPointerUp() {
-        //   // End movement
-        //   isDragging = false;
-        // }
+        rulerMeshesRef.current.forEach((mesh) => (mesh.visible = false));
+        dimensionPlatesRef.current.forEach(
+          (plate) => (plate.group.visible = false),
+        );
 
-        // // Apply functions for rotation of object
-        // renderer.domElement.addEventListener("pointerdown", onPointerDown);
-        // renderer.domElement.addEventListener("pointermove", onPointerMove);
-        // renderer.domElement.addEventListener("pointerup", onPointerUp);
-        // renderer.domElement.addEventListener("pointerleave", onPointerUp);
-        // // --------------- TEST END!!! TEST END!!! ---------------
+        console.log("108 plate pos:", plateDepth108.group.position);
 
-        // // --------------- TEST!!! Toggle material to "Blue" ---------------
-        // gltf.parser.getDependency("material", 0).then((blueMaterial) => {
-        //   model.traverse((obj) => {
-        //     if (obj.isMesh) {
-        //       obj.material = blueMaterial;
-        //     }
-        //   });
-        // });
-        // // ---------------  TEST END!!! ---------------
       },
       undefined,
       (error) => {
@@ -283,12 +318,16 @@ const Object = forwardRef(function Object(props, ref) {
       frameId = requestAnimationFrame(animate);
       controls.update();
       updateLight();
+
+      // Append dimension plates
+      const plates = dimensionPlatesRef.current;
+      plates.forEach((plate) => plate.update(camera));
+
       renderer.render(scene, camera);
     }
     animate();
 
-    // Keeps size in sync with the container, including layout-only
-    // changes (e.g. flex resizing) that don't fire a window resize event
+    // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
       const newWidth = container.clientWidth;
       const newHeight = container.clientHeight;
@@ -304,6 +343,27 @@ const Object = forwardRef(function Object(props, ref) {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
   }, []);
+
+  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
+  useEffect(() => {
+    if (!loaded) return;
+
+    for (const [variantKey, parts] of objectEntries(partsRef.current)) {
+      const isActiveVariant = variantKey === variant;
+      parts.root.visible = isActiveVariant;
+      if (!isActiveVariant) continue;
+
+      parts.standardArmrest.visible = armrestOption === "standard";
+      parts.singleArmrest.visible = armrestOption === "single";
+      parts.noArmrest.visible = armrestOption === "none";
+
+      // Cushion height depends on the armrest variant (see model.md):
+      // the single cushion pairs with both the single-armrest and no-armrest looks.
+      parts.standardCushion.visible = armrestOption === "standard";
+      parts.singleCushion.visible = armrestOption !== "standard";
+    }
+  }, [variant, armrestOption, loaded]);
+
 
   return (
     <article ref={containerRef} style={{ width: "100%", height: "100%" }} />

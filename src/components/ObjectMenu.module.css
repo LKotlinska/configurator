@@ -14,8 +14,6 @@
 
 article img {
   height: 6vh;
-  /* display: none; */
-  /* Hide all, then show first of child */
 }
 
 article :first-child {

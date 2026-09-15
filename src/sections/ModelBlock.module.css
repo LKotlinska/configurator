@@ -3,6 +3,7 @@
   min-width: 0;
   background-color: beige;
   position: relative;
+  height: 100vh;
 }
 
 .rotationIcon {
