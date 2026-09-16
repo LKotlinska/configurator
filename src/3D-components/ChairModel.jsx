@@ -22,6 +22,7 @@ import { useScreenSpaceTag } from "./hooks/useScreenSpaceTag";
 import { useVariantVisibility } from "./hooks/useVariantVisibility";
 import { useMaterialVariant } from "./hooks/useMaterialVariant";
 import { useBoundingBox } from "./hooks/useBoundingBox";
+import { useRaycastInteraction } from "./hooks/useRaycastInteraction";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -63,6 +64,8 @@ const ChairModel = forwardRef(function ChairModel(
   const [showRuler, setShowRuler] = useState(false);
   const [camera, setCamera] = useState(null);
   const [containerEl, setContainerEl] = useState(null);
+  const controlsRef = useRef(null); // For useRaycastInteraction hook!
+  const [renderer, setRenderer] = useState(null); // For useRaycastInteraction hook!
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
@@ -132,6 +135,7 @@ const ChairModel = forwardRef(function ChairModel(
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+    setRenderer(renderer); // For useRaycastInteraction.js
     // Without tone mapping so IBL reflections don't clip straight to white
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.7;
@@ -179,67 +183,8 @@ const ChairModel = forwardRef(function ChairModel(
     controls.target.set(0, 0, 0);
     controls.update();
 
-    // --- Raycasting for "user must click the object to rotate" ---
-    const raycaster = new THREE.Raycaster();
-    const pointerNDC = new THREE.Vector2();
-
-    function getPointerNDC(event) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    }
-
-    function onPointerDown(event) {
-      if (!modelRef.current) return; // model not loaded yet
-      getPointerNDC(event);
-      raycaster.setFromCamera(pointerNDC, camera);
-      const intersects = raycaster.intersectObject(modelRef.current, true);
-
-      if (intersects.length > 0) {
-        controls.enableRotate = true;
-        isDragging = true;
-        renderer.domElement.style.cursor = "grabbing";
-      }
-    }
-
-    function onPointerUp() {
-      controls.enableRotate = false; // turned off until next click on the object
-      isDragging = false;
-      renderer.domElement.style.cursor = isHovering ? "grab" : "default";
-    }
-
-    // Hover cursor
-    let isHovering = false;
-    let isDragging = false;
-
-    function onPointerMove(event) {
-      if (!modelRef.current) return; // model not loaded yet
-      if (isDragging) return; // Grabbing prior to hover
-
-      getPointerNDC(event);
-      raycaster.setFromCamera(pointerNDC, camera);
-      const intersects = raycaster.intersectObject(modelRef.current, true);
-
-      const nowHovering = intersects.length > 0;
-      if (nowHovering !== isHovering) {
-        isHovering = nowHovering;
-        renderer.domElement.style.cursor = isHovering ? "grab" : "default";
-      }
-    }
-
-    function onPointerLeave() {
-      isHovering = false;
-      renderer.domElement.style.cursor = "default";
-    }
-
-    // capture: true makes sure our raycast decision runs before OrbitControls' own pointerdown handler decides whether to start rotating
-    renderer.domElement.addEventListener("pointerdown", onPointerDown, {
-      capture: true,
-    });
-    renderer.domElement.addEventListener("pointerup", onPointerUp);
-    renderer.domElement.addEventListener("pointerleave", onPointerUp);
-    renderer.domElement.addEventListener("pointermove", onPointerMove);
-    renderer.domElement.addEventListener("pointerleave", onPointerLeave);
+    // Koppla controls till en ref så hooken kan styra enableRotate
+    controlsRef.current = controls;
 
     // --- Preset angles ---
     const presets = {
@@ -431,6 +376,9 @@ const ChairModel = forwardRef(function ChairModel(
     loaded,
     UPHOLSTERY_PARTS,
   );
+
+  // RaycastInteraction hook - "user must click the object to rotate"
+  useRaycastInteraction(camera && renderer, camera, modelRef, controlsRef);
 
   useEffect(() => {
     // Guard
