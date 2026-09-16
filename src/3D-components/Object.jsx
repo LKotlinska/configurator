@@ -15,6 +15,8 @@ import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_ma
 import { useScreenSpaceTag } from "./useScreenSpaceTag";
 import styles from "./Object.module.css";
 import loadingIcon from "../assets/loading-icon.gif";
+import { EXRLoader } from "three/examples/jsm/Addons.js";
+import photoStudio from '../assets/3d_assets/brown_photostudio_02_2k.exr'
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -157,17 +159,33 @@ const ChairModel = forwardRef(function ChairModel(
     // without it PBR metals render near-black under direct lights alone.
     // A higher blur (sigma) keeps reflections soft instead of mirror-sharp hotspots.
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+
+    // Fallback env map so metals aren't black while the HDRI streams in
     scene.environment = pmremGenerator.fromScene(
       new RoomEnvironment(),
       0.04,
     ).texture;
-    pmremGenerator.dispose();
 
     // Lightning
-    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const dir = new THREE.DirectionalLight(0xffffff, 2);
     scene.add(dir);
     scene.add(dir.target);
+
+    new EXRLoader().load(
+      photoStudio,
+      (texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+        scene.environment = envMap;
+        texture.dispose();
+        pmremGenerator.dispose();
+      },
+      undefined,
+      (error) => console.error("Failed to load HDRI environment:", error),
+    );
+
 
     // --- OrbitControls setup (independent of the model, so set up immediately) ---
     const controls = new OrbitControls(camera, renderer.domElement);
