@@ -186,28 +186,6 @@ const ChairModel = forwardRef(function ChairModel(
       },
     );
 
-    // // Append animation
-    // let frameId;
-    // function animate() {
-    //   frameId = requestAnimationFrame(animate);
-    //   //   controls.update();
-    //   controlsRef.current?.update();
-    //   //   updateLight();
-    //   updateLightRef.current?.();
-
-    //   // Append dimension plates
-    //   const plates = dimensionPlatesRef.current;
-    //   if (plates?.ES104 && plates?.ES108) {
-    //     Object.values(plates)
-    //       .flat()
-    //       .forEach((plate) => plate.update(camera));
-    //   }
-
-    //   renderer.render(scene, camera);
-    // }
-
-    // animate();
-
     // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
       const newWidth = container.clientWidth;
