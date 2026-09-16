@@ -20,6 +20,7 @@ import photoStudio from "../assets/3d_assets/brown_photostudio_02_2k.exr";
 // IMPORT HOOKS
 import { useScreenSpaceTag } from "./hooks/useScreenSpaceTag";
 import { useVariantVisibility } from "./hooks/useVariantVisibility";
+import { useMaterialVariant } from "./hooks/useMaterialVariant";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -434,10 +435,8 @@ const ChairModel = forwardRef(function ChairModel(
     resizeObserver.observe(container);
   }, []);
 
-  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
-
-  // ------------------------------------------ START ----------------------------------------------------
   //   Hook: useVariantVisibility - check!
+  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
   useVariantVisibility(
     partsRef,
     variant,
@@ -445,48 +444,36 @@ const ChairModel = forwardRef(function ChairModel(
     loaded,
     boundingBoxRef,
   );
-  //   useEffect(() => {
-  //     if (!loaded) return;
-
-  //     for (const [variantKey, parts] of Object.entries(partsRef.current)) {
-  //       const isActiveVariant = variantKey === variant;
-  //       parts.root.visible = isActiveVariant;
-  //       if (!isActiveVariant) continue;
-
-  //       parts.standardArmrest.visible = armrestOption === "standard";
-  //       parts.singleArmrest.visible = armrestOption === "single";
-  //       parts.noArmrest.visible = armrestOption === "none";
-
-  //       // Cushion height depends on the armrest variant (see model.md).
-  //       // No armrest means no armrest cushion either.
-  //       parts.standardCushion.visible = armrestOption === "standard";
-  //       parts.singleCushion.visible = armrestOption === "single";
-  //     }
-
-  //     // Recalculate bounding-box after each user toggle
-  //     boundingBoxRef.current = computeVisibleWorldBox(
-  //       partsRef.current[variant]?.root,
-  //     );
-  //   }, [variant, armrestOption, loaded]);
-  // ------------------------------------------ END ----------------------------------------------------
 
   // Switches every upholstery mesh, across both variants, to the GLB's
   // baked-in material variant for the selected material/color (e.g.
   // "fabric_cream" — see model.md section 6) so the choice survives
   // switching variant/armrest afterwards.
-  useEffect(() => {
-    if (!loaded || !selectVariantRef.current) return;
+  // ------------------------------------------ START ----------------------------------------------------
+  //   Hook: useMaterialVariant - check!
+  useMaterialVariant(
+    partsRef,
+    selectVariantRef,
+    material,
+    color,
+    loaded,
+    UPHOLSTERY_PARTS,
+  );
 
-    const variantName = `${material}_${color}`;
-    for (const [, parts] of Object.entries(partsRef.current)) {
-      for (const partKey of UPHOLSTERY_PARTS) {
-        const mesh = parts[partKey];
-        if (mesh) {
-          selectVariantRef.current(mesh, variantName, false);
-        }
-      }
-    }
-  }, [material, color, loaded]);
+  //   useEffect(() => {
+  //     if (!loaded || !selectVariantRef.current) return;
+
+  //     const variantName = `${material}_${color}`;
+  //     for (const [, parts] of Object.entries(partsRef.current)) {
+  //       for (const partKey of UPHOLSTERY_PARTS) {
+  //         const mesh = parts[partKey];
+  //         if (mesh) {
+  //           selectVariantRef.current(mesh, variantName, false);
+  //         }
+  //       }
+  //     }
+  //   }, [material, color, loaded]);
+  // ------------------------------------------ END ----------------------------------------------------
 
   useEffect(() => {
     // Guard
