@@ -289,9 +289,9 @@ const ChairModel = forwardRef(function ChairModel(
         const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
 
         // Create 3 dimension plates & append to scene
-        const plateDepth104 = createDimension("69,5");
-        const plateWidth104 = createDimension("68,3");
-        const plateHeight104 = createDimension("83,7");
+        const plateDepth104 = createDimension("71");
+        const plateWidth104 = createDimension("69");
+        const plateHeight104 = createDimension("89");
 
         plateDepth104.attachTo(linjal104, offsetDepth104);
         plateWidth104.attachTo(linjal104, offsetWidth104);
@@ -306,9 +306,9 @@ const ChairModel = forwardRef(function ChairModel(
         const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
         // Create 3 dimension plates & append to scene
-        const plateDepth108 = createDimension("69,1");
-        const plateWidth108 = createDimension("68,3");
-        const plateHeight108 = createDimension("83,7");
+        const plateDepth108 = createDimension("72");
+        const plateWidth108 = createDimension("69");
+        const plateHeight108 = createDimension("88");
 
         plateDepth108.attachTo(linjal108, offsetDepth108);
         plateWidth108.attachTo(linjal108, offsetWidth108);
