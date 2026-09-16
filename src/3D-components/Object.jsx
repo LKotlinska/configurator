@@ -12,6 +12,8 @@ import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
+import styles from "./Object.module.css";
+import loadingIcon from "../assets/loading-icon.gif";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -436,7 +438,18 @@ const ChairModel = forwardRef(function ChairModel(
   }, [variant]);
 
   return (
-    <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
+    <div className={styles.wrapper}>
+      <article ref={containerRef} className={styles.container} />
+      {!loaded && (
+        <div className={styles.loadingOverlay}>
+          <img
+            src={loadingIcon}
+            alt="Loading model"
+            className={styles.loadingIcon}
+          />
+        </div>
+      )}
+    </div>
   );
 });
 

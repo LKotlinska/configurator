@@ -25,7 +25,13 @@ export default function ModelBlock({
 
   return (
     <section className={styles.modelBlock}>
-      <Chair ref={chairRef} variant={variant} armrestOption={armrestOption} material={material} color={color}/>
+      <Chair 
+        ref={chairRef} 
+        variant={variant} 
+        armrestOption={armrestOption} 
+        material={material} 
+        color={color}
+      />
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}
