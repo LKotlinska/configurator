@@ -7,14 +7,10 @@ import {
 } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CHAIR_URL } from "../config/models";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { createDimension } from "./helpers/createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
 import styles from "./Object.module.css";
 import loadingIcon from "../assets/loading-icon.gif";
-import { EXRLoader } from "three/examples/jsm/Addons.js";
 import photoStudio from "../assets/3d_assets/brown_photostudio_02_2k.exr";
 
 // IMPORT HOOKS
@@ -62,18 +58,13 @@ const ChairModel = forwardRef(function ChairModel(
   ref,
 ) {
   const containerRef = useRef(null);
-  //   const initialized = useRef(false);
   const dimensionPlatesRef = useRef({});
   const rulerMeshesRef = useRef({});
   const cameraRef = useRef(null);
   const boundingBoxRef = useRef(null);
   const [showRuler, setShowRuler] = useState(false);
-  //   const [camera, setCamera] = useState(null);
   const [containerEl, setContainerEl] = useState(null);
   const gltfRef = useRef(null); // For useDimensions hook
-  //   const controlsRef = useRef(null); // For useRaycastInteraction hook!
-  //   const [renderer, setRenderer] = useState(null); // For useRaycastInteraction hook!
-  //   const dirRef = useRef(null); // For useCameraControl hook
 
   // Scene setup hook
   const { scene, camera, renderer, controlsRef, dirRef } = useSceneSetup(
@@ -189,27 +180,6 @@ const ChairModel = forwardRef(function ChairModel(
         console.error("COULD NOT LOAD GLB:", error);
       },
     );
-
-    // // Keeps size in sync with the container, including layout-only changes
-    // function handleResize() {
-    //   const newWidth = container.clientWidth;
-    //   const newHeight = container.clientHeight;
-    //   if (!newWidth || !newHeight) return;
-
-    //   camera.aspect = newWidth / newHeight;
-    //   camera.updateProjectionMatrix();
-    //   renderer.setSize(newWidth, newHeight);
-    //   // Repaint immediately since setSize() clears the canvas's drawing buffer
-    //   // causing 'blinking' on canvas when toggling visibility of configurator section
-    //   renderer.render(scene, camera);
-    // }
-    // const resizeObserver = new ResizeObserver(handleResize);
-    // resizeObserver.observe(container);
-
-    return () => {
-      //   cancelAnimationFrame(frameId);
-      resizeObserver.disconnect();
-    };
   }, [scene, camera, renderer]);
 
   useEffect(() => {
@@ -231,15 +201,15 @@ const ChairModel = forwardRef(function ChairModel(
     y: -12,
   });
 
-  // -------------------- Hook: useBoundingBox + updated useVariantVisibility - check!
+  // Hook: useBoundingBox + updated useVariantVisibility
   useVariantVisibility(partsRef, variant, armrestOption, loaded);
   useBoundingBox(partsRef, variant, loaded, boundingBoxRef);
 
-  // -------------------- Hook: useMaterialVariant - check!
   // Switches every upholstery mesh, across both variants, to the GLB's
   // baked-in material variant for the selected material/color (e.g.
   // "fabric_cream" — see model.md section 6) so the choice survives
   // switching variant/armrest afterwards.
+  // Hook: useMaterialVariant
   useMaterialVariant(
     partsRef,
     selectVariantRef,
