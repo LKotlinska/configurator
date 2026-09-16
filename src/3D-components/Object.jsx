@@ -477,24 +477,24 @@ const ChairModel = forwardRef(function ChairModel(
   });
 
   return (
-
     <div className={styles.wrapper}>
-      <article ref={containerRef} className={styles.container} style={{ position: "relative" }}>
+      <article ref={containerRef} className={styles.container}>
         {showRuler && (
-        <div
-          ref={tagRef}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            pointerEvents: "none",
-            color: "#383737",
-            fontSize: "20px",
-          }}
-        >
-          [cm]
-        </div>
-      <article />
+          <div
+            ref={tagRef}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              pointerEvents: "none",
+              color: "#383737",
+              fontSize: "20px",
+            }}
+          >
+            [cm]
+          </div>
+        )}
+      </article>
       {!loaded && (
         <div className={styles.loadingOverlay}>
           <img
