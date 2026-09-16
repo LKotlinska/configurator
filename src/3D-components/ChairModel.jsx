@@ -28,6 +28,7 @@ import { useCameraControls } from "./hooks/useCameraControls";
 import { useSceneSetup } from "./hooks/useSceneSetup";
 import { useDimensions } from "./hooks/useDimensions";
 import { useAnimationLoop } from "./hooks/useAnimationLoop";
+import { useResizeObserver } from "./hooks/useResizeObserver";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -103,6 +104,9 @@ const ChairModel = forwardRef(function ChairModel(
     updateLightRef,
     dimensionPlatesRef,
   );
+
+  // Hook: useResizeObserver
+  useResizeObserver(containerRef, scene, camera, renderer);
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
@@ -186,21 +190,21 @@ const ChairModel = forwardRef(function ChairModel(
       },
     );
 
-    // Keeps size in sync with the container, including layout-only changes
-    function handleResize() {
-      const newWidth = container.clientWidth;
-      const newHeight = container.clientHeight;
-      if (!newWidth || !newHeight) return;
+    // // Keeps size in sync with the container, including layout-only changes
+    // function handleResize() {
+    //   const newWidth = container.clientWidth;
+    //   const newHeight = container.clientHeight;
+    //   if (!newWidth || !newHeight) return;
 
-      camera.aspect = newWidth / newHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(newWidth, newHeight);
-      // Repaint immediately since setSize() clears the canvas's drawing buffer
-      // causing 'blinking' on canvas when toggling visibility of configurator section
-      renderer.render(scene, camera);
-    }
-    const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(container);
+    //   camera.aspect = newWidth / newHeight;
+    //   camera.updateProjectionMatrix();
+    //   renderer.setSize(newWidth, newHeight);
+    //   // Repaint immediately since setSize() clears the canvas's drawing buffer
+    //   // causing 'blinking' on canvas when toggling visibility of configurator section
+    //   renderer.render(scene, camera);
+    // }
+    // const resizeObserver = new ResizeObserver(handleResize);
+    // resizeObserver.observe(container);
 
     return () => {
       //   cancelAnimationFrame(frameId);
