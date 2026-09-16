@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./App.css";
 import ModelBlock from "./sections/ModelBlock";
 import ProductBlock from "./sections/ProductBlock";
-import Navigator from "./components/Navigator";
+import Slideshow from "./sections/Slideshow";
 
 function App() {
   const [showConfig, setShowConfig] = useState(true);
@@ -10,6 +10,11 @@ function App() {
   const [ armrestOption, setArmrestOption ] = useState("standard");
   const [ material, setMaterial ] = useState("fabric");
   const [ color, setColor ] = useState("cream");
+  const slideshowRef = useRef(null);
+  
+    function scrollToSlideshow() {
+    slideshowRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return (
     <>
@@ -22,11 +27,9 @@ function App() {
             color={color}
             showConfig={showConfig}
             onToggle={() => setShowConfig(!showConfig)}
+            onShow2D={scrollToSlideshow}
           />
-          <img
-            className={`environmentImage ${showConfig ? "img--collapsed" : "img--expanded"}`}
-            src="./src/assets/test-img.webp"
-          ></img>
+          <Slideshow showConfig={showConfig} ref={slideshowRef} />
         </div>
         <ProductBlock
           variant={variant}
@@ -40,7 +43,6 @@ function App() {
           showConfig={showConfig}
           onToggle={() => setShowConfig(!showConfig)}
         />
-        <Navigator />
       </main>
     </>
   );

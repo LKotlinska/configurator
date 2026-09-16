@@ -3,7 +3,16 @@ import styles from "./ModelBlock.module.css";
 import Chair from "../3D-components/Object";
 import ObjectMenu from "../components/ObjectMenu";
 
-export default function ModelBlock({ variant, armrestOption, material, color, showConfig, onToggle }) {
+export default function ModelBlock({
+  variant,
+  armrestOption, 
+  material, 
+  color,
+  showConfig,
+  onToggle,
+  onShow2D,
+}) {
+
   const chairRef = useRef(null);
 
   function handleAngleSelect(key) {
@@ -23,6 +32,7 @@ export default function ModelBlock({ variant, armrestOption, material, color, sh
         onRulerToggle={toggleRuler}
         showConfig={showConfig}
         onToggle={onToggle}
+        onShow2D={onShow2D}
       />
     </section>
   );

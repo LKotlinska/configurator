@@ -6,6 +6,7 @@ export default function ObjectMenu({
   showConfig,
   onToggle,
   onRulerToggle,
+  onShow2D,
 }) {
   const [showAngles, setShowAngles] = useState(false);
   const [showRuler, setShowRuler] = useState(false);
@@ -77,18 +78,15 @@ export default function ObjectMenu({
       {/* Fullscreen menu */}
       <article className={styles.screenMenu}>
         {!showConfig ? (
-          <img
-            src="/icons/openFullscreen2.png"
-            // className={styles.closeFullscreen}
-            onClick={onToggle}
-          />
+          <img src="/icons/openFullscreen.png" onClick={onToggle} />
         ) : (
-          <img
-            src="/icons/closeFullscreen2.png"
-            // className={styles.openFullscreen}
-            onClick={onToggle}
-          />
+          <img src="/icons/closeFullscreen.png" onClick={onToggle} />
         )}
+      </article>
+
+      {/* Redirect to slideshow */}
+      <article className={styles.imgMenu}>
+        <img src="/icons/2D.png" onClick={() => onShow2D?.()} />
       </article>
     </section>
   );

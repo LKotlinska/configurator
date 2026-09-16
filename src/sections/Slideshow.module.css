@@ -1,0 +1,58 @@
+.slideshowContainer {
+  position: relative;
+}
+
+.environmentImage {
+  width: 100vw;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  display: block;
+  transition: object-position 0.5s ease;
+}
+
+.img--collapsed {
+  object-position: calc(var(--product-panel-width) / -3) center;
+}
+
+.img--expanded {
+  object-position: center;
+}
+
+.arrows {
+  z-index: 5;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.leftArrow {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+}
+
+.rightArrow {
+  position: absolute;
+  top: 50%;
+  right: 2%;
+}
+.leftArrow {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+}
+
+.navPosition {
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  transform: translateX(-50%);
+}
