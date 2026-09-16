@@ -25,6 +25,7 @@ import { useBoundingBox } from "./hooks/useBoundingBox";
 import { useRaycastInteraction } from "./hooks/useRaycastInteraction";
 import { usePresetAngles } from "./hooks/usePresetAngles";
 import { useCameraControls } from "./hooks/useCameraControls";
+import { useSceneSetup } from "./hooks/useSceneSetup";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -58,17 +59,25 @@ const ChairModel = forwardRef(function ChairModel(
   ref,
 ) {
   const containerRef = useRef(null);
-  const initialized = useRef(false);
+  //   const initialized = useRef(false);
   const dimensionPlatesRef = useRef({});
   const rulerMeshesRef = useRef({});
   const cameraRef = useRef(null);
   const boundingBoxRef = useRef(null);
   const [showRuler, setShowRuler] = useState(false);
-  const [camera, setCamera] = useState(null);
+  //   const [camera, setCamera] = useState(null);
   const [containerEl, setContainerEl] = useState(null);
-  const controlsRef = useRef(null); // For useRaycastInteraction hook!
-  const [renderer, setRenderer] = useState(null); // For useRaycastInteraction hook!
-  const dirRef = useRef(null); // For useCameraControl hook
+  //   const controlsRef = useRef(null); // For useRaycastInteraction hook!
+  //   const [renderer, setRenderer] = useState(null); // For useRaycastInteraction hook!
+  //   const dirRef = useRef(null); // For useCameraControl hook
+
+  // Scene setup hook
+  const { scene, camera, renderer, controlsRef, dirRef } = useSceneSetup(
+    containerRef,
+    photoStudio,
+  );
+  // cameraRef must be updated so other hooks works
+  cameraRef.current = camera;
 
   // Camera control hook
   const updateLightRef = useCameraControls(
@@ -117,72 +126,13 @@ const ChairModel = forwardRef(function ChairModel(
     },
   }));
 
+  // Model Loader
   useEffect(() => {
-    // Solved double rendering
-    if (initialized.current) return;
-    initialized.current = true;
+    if (!scene || !camera || !renderer) return;
 
-    // Early break
     const container = containerRef.current;
     if (!container) return;
-
-    // Set sizes
-    const width = container.clientWidth || window.innerWidth / 2;
-    const height = container.clientHeight || window.innerHeight;
-
-    // Create scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xd3d3d3);
-
-    // Stage camera
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
-    // For ScreenSpace
-    cameraRef.current = camera;
-    setCamera(camera);
     setContainerEl(container);
-
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    setRenderer(renderer); // For useRaycastInteraction.js
-    // Without tone mapping so IBL reflections don't clip straight to white
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.7;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    container.appendChild(renderer.domElement);
-
-    // Environment map so metallic/chrome parts have something to reflect -
-    // without it PBR metals render near-black under direct lights alone.
-    // A higher blur (sigma) keeps reflections soft instead of mirror-sharp hotspots.
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    pmremGenerator.compileEquirectangularShader();
-
-    // Fallback env map so metals aren't black while the HDRI streams in
-    scene.environment = pmremGenerator.fromScene(
-      new RoomEnvironment(),
-      0.04,
-    ).texture;
-
-    // Lightning
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const dir = new THREE.DirectionalLight(0xffffff, 2);
-    scene.add(dir);
-    scene.add(dir.target);
-    dirRef.current = dir; // For useCameraControl hook
-
-    new EXRLoader().load(
-      photoStudio,
-      (texture) => {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        const envMap = pmremGenerator.fromEquirectangular(texture).texture;
-        scene.environment = envMap;
-        texture.dispose();
-        pmremGenerator.dispose();
-      },
-      undefined,
-      (error) => console.error("Failed to load HDRI environment:", error),
-    );
 
     // Loader
     const loader = new GLTFLoader();
@@ -316,7 +266,12 @@ const ChairModel = forwardRef(function ChairModel(
     }
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
-  }, []);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+    };
+  }, [scene, camera, renderer]);
 
   useEffect(() => {
     // Guard
