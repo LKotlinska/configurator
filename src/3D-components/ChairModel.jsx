@@ -24,6 +24,7 @@ import { useMaterialVariant } from "./hooks/useMaterialVariant";
 import { useBoundingBox } from "./hooks/useBoundingBox";
 import { useRaycastInteraction } from "./hooks/useRaycastInteraction";
 import { usePresetAngles } from "./hooks/usePresetAngles";
+import { useCameraControls } from "./hooks/useCameraControls";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -67,6 +68,15 @@ const ChairModel = forwardRef(function ChairModel(
   const [containerEl, setContainerEl] = useState(null);
   const controlsRef = useRef(null); // For useRaycastInteraction hook!
   const [renderer, setRenderer] = useState(null); // For useRaycastInteraction hook!
+  const dirRef = useRef(null); // For useCameraControl hook
+
+  // Camera control hook
+  const updateLightRef = useCameraControls(
+    camera,
+    renderer,
+    controlsRef,
+    dirRef.current,
+  );
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
@@ -160,6 +170,7 @@ const ChairModel = forwardRef(function ChairModel(
     const dir = new THREE.DirectionalLight(0xffffff, 2);
     scene.add(dir);
     scene.add(dir.target);
+    dirRef.current = dir; // For useCameraControl hook
 
     new EXRLoader().load(
       photoStudio,
@@ -174,30 +185,30 @@ const ChairModel = forwardRef(function ChairModel(
       (error) => console.error("Failed to load HDRI environment:", error),
     );
 
-    // --- OrbitControls setup (independent of the model, so set up immediately) ---
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableRotate = false; // user can't rotate object by clicking on canvas
-    controls.enableZoom = true; // zoom handled by OrbitControls
-    controls.enablePan = false; // don't let the user pan the object away
-    controls.minDistance = 0.8; // zoom limit
-    controls.maxDistance = 2; // zoom limit
-    controls.target.set(0, 0, 0);
-    controls.update();
+    // // --- OrbitControls setup (independent of the model, so set up immediately) ---
+    // const controls = new OrbitControls(camera, renderer.domElement);
+    // controls.enableRotate = false; // user can't rotate object by clicking on canvas
+    // controls.enableZoom = true; // zoom handled by OrbitControls
+    // controls.enablePan = false; // don't let the user pan the object away
+    // controls.minDistance = 0.8; // zoom limit
+    // controls.maxDistance = 2; // zoom limit
+    // controls.target.set(0, 0, 0);
+    // controls.update();
 
-    // Connect controls to a ref -> enables the hook to control enableRotate
-    controlsRef.current = controls;
+    // // Connect controls to a ref -> enables the hook to control enableRotate
+    // controlsRef.current = controls;
 
-    // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
-    const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
+    // // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
+    // const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
 
-    function updateLight() {
-      const rotatedOffset = lightOffset
-        .clone()
-        .applyQuaternion(camera.quaternion);
-      dir.position.copy(camera.position).add(rotatedOffset);
-      dir.target.position.copy(controls.target);
-      dir.target.updateMatrixWorld();
-    }
+    // function updateLight() {
+    //   const rotatedOffset = lightOffset
+    //     .clone()
+    //     .applyQuaternion(camera.quaternion);
+    //   dir.position.copy(camera.position).add(rotatedOffset);
+    //   dir.target.position.copy(controls.target);
+    //   dir.target.updateMatrixWorld();
+    // }
 
     // Loader
     const loader = new GLTFLoader();
@@ -223,9 +234,12 @@ const ChairModel = forwardRef(function ChairModel(
         // Re-center vertically
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
-        camera.position.y += center.y - controls.target.y;
-        controls.target.y = center.y;
-        controls.update();
+        // camera.position.y += center.y - controls.target.y;
+        // controls.target.y = center.y;
+        // controls.update();
+        camera.position.y += center.y - controlsRef.current.target.y;
+        controlsRef.current.target.y = center.y;
+        controlsRef.current.update();
 
         // --- Dimensions ---
         // Define positions in lines
@@ -298,8 +312,10 @@ const ChairModel = forwardRef(function ChairModel(
     let frameId;
     function animate() {
       frameId = requestAnimationFrame(animate);
-      controls.update();
-      updateLight();
+      //   controls.update();
+      controlsRef.current?.update();
+      //   updateLight();
+      updateLightRef.current?.();
 
       // Append dimension plates
       const plates = dimensionPlatesRef.current;
@@ -331,6 +347,25 @@ const ChairModel = forwardRef(function ChairModel(
     resizeObserver.observe(container);
   }, []);
 
+  useEffect(() => {
+    // Guard
+    if (
+      !dimensionPlatesRef.current?.ES104 ||
+      !dimensionPlatesRef.current?.ES108
+    ) {
+      return;
+    }
+
+    // // If ruler is activated - show dimensions for current variant
+    applyRulerVisibility(showRuler, variant);
+  }, [variant, showRuler, loaded]);
+
+  // Unit scrren tag - append to the object's screen-bounding-box, allows tag to always follow upper right corner
+  const tagRef = useScreenSpaceTag(camera, containerEl, boundingBoxRef, {
+    x: 12,
+    y: -12,
+  });
+
   // -------------------- Hook: useBoundingBox + updated useVariantVisibility - check!
   useVariantVisibility(partsRef, variant, armrestOption, loaded);
   useBoundingBox(partsRef, variant, loaded, boundingBoxRef);
@@ -355,24 +390,8 @@ const ChairModel = forwardRef(function ChairModel(
   //   PresetAngles hook
   usePresetAngles(camera, controlsRef.current, goToPresetRef);
 
-  useEffect(() => {
-    // Guard
-    if (
-      !dimensionPlatesRef.current?.ES104 ||
-      !dimensionPlatesRef.current?.ES108
-    ) {
-      return;
-    }
-
-    // // If ruler is activated - show dimensions for current variant
-    applyRulerVisibility(showRuler, variant);
-  }, [variant, showRuler, loaded]);
-
-  // Unit scrren tag - append to the object's screen-bounding-box, allows tag to always follow upper right corner
-  const tagRef = useScreenSpaceTag(camera, containerEl, boundingBoxRef, {
-    x: 12,
-    y: -12,
-  });
+  //   //   Camera control hook
+  //   useCameraControls(camera, renderer, controlsRef, dirRef.current);
 
   return (
     <div className={styles.wrapper}>
