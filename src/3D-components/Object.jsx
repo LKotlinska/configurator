@@ -12,6 +12,7 @@ import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
+import { useScreenSpaceTag } from "./useScreenSpaceTag";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -40,6 +41,28 @@ const CHAIR_PARTS = {
   },
 };
 
+// Calculate bounding box for all visible meshes
+function computeVisibleWorldBox(root) {
+  if (!root) return null;
+  const box = new THREE.Box3();
+
+  function recurse(obj) {
+    if (!obj.visible) return;
+    if (obj.geometry) {
+      obj.geometry.computeBoundingBox?.();
+      if (obj.geometry.boundingBox) {
+        const localBox = obj.geometry.boundingBox.clone();
+        localBox.applyMatrix4(obj.matrixWorld);
+        box.union(localBox);
+      }
+    }
+    obj.children.forEach(recurse);
+  }
+
+  recurse(root);
+  return box.isEmpty() ? null : box;
+}
+
 const ChairModel = forwardRef(function ChairModel(
   { variant, armrestOption = "standard", material = "fabric", color = "cream" },
   ref,
@@ -48,6 +71,11 @@ const ChairModel = forwardRef(function ChairModel(
   const initialized = useRef(false);
   const dimensionPlatesRef = useRef({});
   const rulerMeshesRef = useRef({});
+  const cameraRef = useRef(null);
+  const boundingBoxRef = useRef(null);
+  const [showRuler, setShowRuler] = useState(false);
+  const [camera, setCamera] = useState(null);
+  const [containerEl, setContainerEl] = useState(null);
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
@@ -83,8 +111,9 @@ const ChairModel = forwardRef(function ChairModel(
   // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
-    setRulerVisible: (visible, variantKey) =>
-      applyRulerVisibility(visible, variantKey),
+    setRulerVisible: (visible, variantKey) => {
+      (setShowRuler(visible), applyRulerVisibility(visible, variantKey));
+    },
   }));
 
   useEffect(() => {
@@ -108,6 +137,10 @@ const ChairModel = forwardRef(function ChairModel(
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     // camera.position.set(0, 1, 3);
     camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
+    // For ScreenSpace
+    cameraRef.current = camera;
+    setCamera(camera);
+    setContainerEl(container);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -335,8 +368,6 @@ const ChairModel = forwardRef(function ChairModel(
         Object.values(dimensionPlatesRef.current)
           .flat()
           .forEach((plate) => (plate.group.visible = false));
-
-        console.log("108 plate pos:", plateDepth108.group.position);
       },
       undefined,
       (error) => {
@@ -399,6 +430,11 @@ const ChairModel = forwardRef(function ChairModel(
       parts.standardCushion.visible = armrestOption === "standard";
       parts.singleCushion.visible = armrestOption === "single";
     }
+
+    // Recalculate bounding-box after each user toggle
+    boundingBoxRef.current = computeVisibleWorldBox(
+      partsRef.current[variant]?.root,
+    );
   }, [variant, armrestOption, loaded]);
 
   // Switches every upholstery mesh, across both variants, to the GLB's
@@ -428,15 +464,37 @@ const ChairModel = forwardRef(function ChairModel(
       return;
     }
 
-    // If ruler is activated - show dimensions for current variant
-    const anyVisible = Object.values(dimensionPlatesRef.current)
-      .flat()
-      .some((plate) => plate.group.visible);
-    applyRulerVisibility(anyVisible, variant);
-  }, [variant]);
+    // // If ruler is activated - show dimensions for current variant
+    applyRulerVisibility(showRuler, variant);
+  }, [variant, showRuler, loaded]);
+
+  // Unit scrren tag - append to the object's screen-bounding-box, allows tag to always follow upper right corner
+  const tagRef = useScreenSpaceTag(camera, containerEl, boundingBoxRef, {
+    x: 12,
+    y: -12,
+  });
 
   return (
-    <article ref={containerRef} style={{ width: "100%", height: "100%" }} />
+    <article
+      ref={containerRef}
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    >
+      {showRuler && (
+        <div
+          ref={tagRef}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            pointerEvents: "none",
+            color: "#383737",
+            fontSize: "20px",
+          }}
+        >
+          [cm]
+        </div>
+      )}
+    </article>
   );
 });
 
