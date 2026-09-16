@@ -310,12 +310,12 @@ const ChairModel = forwardRef(function ChairModel(
 
         // --- Dimensions ---
         // Define positions in lines
-        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetWidth104 = new THREE.Vector3(0, 0, -0.1);
         const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
-        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetHeight104 = new THREE.Vector3(-0.5, -0.5, -0.1);
         const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
-        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
-        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.35);
+        const offsetHeight108 = new THREE.Vector3(-0.1, 0.4, -0.1);
 
         // --- Model 104 ---
         // Fetch dimension lines in 3D object
