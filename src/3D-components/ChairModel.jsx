@@ -27,6 +27,7 @@ import { usePresetAngles } from "./hooks/usePresetAngles";
 import { useCameraControls } from "./hooks/useCameraControls";
 import { useSceneSetup } from "./hooks/useSceneSetup";
 import { useDimensions } from "./hooks/useDimensions";
+import { useAnimationLoop } from "./hooks/useAnimationLoop";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -91,6 +92,16 @@ const ChairModel = forwardRef(function ChairModel(
     renderer,
     controlsRef,
     dirRef.current,
+  );
+
+  // Hook: useAnimationLoop
+  useAnimationLoop(
+    scene,
+    camera,
+    renderer,
+    controlsRef,
+    updateLightRef,
+    dimensionPlatesRef,
   );
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
@@ -175,27 +186,27 @@ const ChairModel = forwardRef(function ChairModel(
       },
     );
 
-    // Append animation
-    let frameId;
-    function animate() {
-      frameId = requestAnimationFrame(animate);
-      //   controls.update();
-      controlsRef.current?.update();
-      //   updateLight();
-      updateLightRef.current?.();
+    // // Append animation
+    // let frameId;
+    // function animate() {
+    //   frameId = requestAnimationFrame(animate);
+    //   //   controls.update();
+    //   controlsRef.current?.update();
+    //   //   updateLight();
+    //   updateLightRef.current?.();
 
-      // Append dimension plates
-      const plates = dimensionPlatesRef.current;
-      if (plates?.ES104 && plates?.ES108) {
-        Object.values(plates)
-          .flat()
-          .forEach((plate) => plate.update(camera));
-      }
+    //   // Append dimension plates
+    //   const plates = dimensionPlatesRef.current;
+    //   if (plates?.ES104 && plates?.ES108) {
+    //     Object.values(plates)
+    //       .flat()
+    //       .forEach((plate) => plate.update(camera));
+    //   }
 
-      renderer.render(scene, camera);
-    }
+    //   renderer.render(scene, camera);
+    // }
 
-    animate();
+    // animate();
 
     // Keeps size in sync with the container, including layout-only changes
     function handleResize() {
@@ -214,7 +225,7 @@ const ChairModel = forwardRef(function ChairModel(
     resizeObserver.observe(container);
 
     return () => {
-      cancelAnimationFrame(frameId);
+      //   cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
     };
   }, [scene, camera, renderer]);
