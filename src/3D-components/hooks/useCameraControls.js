@@ -10,6 +10,16 @@ export function useCameraControls(camera, renderer, controlsRef, dir) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controlsRef.current = controls;
+    controls.enableRotate = false; // user can't rotate object by clicking on canvas
+    controls.enableZoom = true; // zoom handled by OrbitControls
+    controls.enablePan = false; // don't let the user pan the object away
+
+    // Restore zoom limits
+    controls.minDistance = 0.8;
+    controls.maxDistance = 2;
+
+    controls.target.set(0, 0, 0);
+    controls.update();
 
     const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
 
