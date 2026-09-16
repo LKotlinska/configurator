@@ -21,6 +21,7 @@ import photoStudio from "../assets/3d_assets/brown_photostudio_02_2k.exr";
 import { useScreenSpaceTag } from "./hooks/useScreenSpaceTag";
 import { useVariantVisibility } from "./hooks/useVariantVisibility";
 import { useMaterialVariant } from "./hooks/useMaterialVariant";
+import { useBoundingBox } from "./hooks/useBoundingBox";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -48,28 +49,6 @@ const CHAIR_PARTS = {
     singleCushion: "07_Singel_Cushion_ES108",
   },
 };
-
-// Calculate bounding box for all visible meshes
-function computeVisibleWorldBox(root) {
-  if (!root) return null;
-  const box = new THREE.Box3();
-
-  function recurse(obj) {
-    if (!obj.visible) return;
-    if (obj.geometry) {
-      obj.geometry.computeBoundingBox?.();
-      if (obj.geometry.boundingBox) {
-        const localBox = obj.geometry.boundingBox.clone();
-        localBox.applyMatrix4(obj.matrixWorld);
-        box.union(localBox);
-      }
-    }
-    obj.children.forEach(recurse);
-  }
-
-  recurse(root);
-  return box.isEmpty() ? null : box;
-}
 
 const ChairModel = forwardRef(function ChairModel(
   { variant, armrestOption = "standard", material = "fabric", color = "cream" },
@@ -435,22 +414,15 @@ const ChairModel = forwardRef(function ChairModel(
     resizeObserver.observe(container);
   }, []);
 
-  //   Hook: useVariantVisibility - check!
-  // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
-  useVariantVisibility(
-    partsRef,
-    variant,
-    armrestOption,
-    loaded,
-    boundingBoxRef,
-  );
+  // -------------------- Hook: useBoundingBox + updated useVariantVisibility - check!
+  useVariantVisibility(partsRef, variant, armrestOption, loaded);
+  useBoundingBox(partsRef, variant, loaded, boundingBoxRef);
 
+  // -------------------- Hook: useMaterialVariant - check!
   // Switches every upholstery mesh, across both variants, to the GLB's
   // baked-in material variant for the selected material/color (e.g.
   // "fabric_cream" — see model.md section 6) so the choice survives
   // switching variant/armrest afterwards.
-  // ------------------------------------------ START ----------------------------------------------------
-  //   Hook: useMaterialVariant - check!
   useMaterialVariant(
     partsRef,
     selectVariantRef,
@@ -459,21 +431,6 @@ const ChairModel = forwardRef(function ChairModel(
     loaded,
     UPHOLSTERY_PARTS,
   );
-
-  //   useEffect(() => {
-  //     if (!loaded || !selectVariantRef.current) return;
-
-  //     const variantName = `${material}_${color}`;
-  //     for (const [, parts] of Object.entries(partsRef.current)) {
-  //       for (const partKey of UPHOLSTERY_PARTS) {
-  //         const mesh = parts[partKey];
-  //         if (mesh) {
-  //           selectVariantRef.current(mesh, variantName, false);
-  //         }
-  //       }
-  //     }
-  //   }, [material, color, loaded]);
-  // ------------------------------------------ END ----------------------------------------------------
 
   useEffect(() => {
     // Guard
