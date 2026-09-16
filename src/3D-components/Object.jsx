@@ -12,6 +12,7 @@ import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
+import { useScreenSpaceTag } from "./useScreenSpaceTag";
 import styles from "./Object.module.css";
 import loadingIcon from "../assets/loading-icon.gif";
 
@@ -42,6 +43,28 @@ const CHAIR_PARTS = {
   },
 };
 
+// Calculate bounding box for all visible meshes
+function computeVisibleWorldBox(root) {
+  if (!root) return null;
+  const box = new THREE.Box3();
+
+  function recurse(obj) {
+    if (!obj.visible) return;
+    if (obj.geometry) {
+      obj.geometry.computeBoundingBox?.();
+      if (obj.geometry.boundingBox) {
+        const localBox = obj.geometry.boundingBox.clone();
+        localBox.applyMatrix4(obj.matrixWorld);
+        box.union(localBox);
+      }
+    }
+    obj.children.forEach(recurse);
+  }
+
+  recurse(root);
+  return box.isEmpty() ? null : box;
+}
+
 const ChairModel = forwardRef(function ChairModel(
   { variant, armrestOption = "standard", material = "fabric", color = "cream" },
   ref,
@@ -50,6 +73,11 @@ const ChairModel = forwardRef(function ChairModel(
   const initialized = useRef(false);
   const dimensionPlatesRef = useRef({});
   const rulerMeshesRef = useRef({});
+  const cameraRef = useRef(null);
+  const boundingBoxRef = useRef(null);
+  const [showRuler, setShowRuler] = useState(false);
+  const [camera, setCamera] = useState(null);
+  const [containerEl, setContainerEl] = useState(null);
 
   // Populated on load as { ES104: { root, base, standardArmrest, ... }, ES108: {...} }
   const partsRef = useRef({});
@@ -85,8 +113,9 @@ const ChairModel = forwardRef(function ChairModel(
   // Exposes 'goToPreset' to whichever parent holds a ref to this component
   useImperativeHandle(ref, () => ({
     goToPreset: (key) => goToPresetRef.current?.(key),
-    setRulerVisible: (visible, variantKey) =>
-      applyRulerVisibility(visible, variantKey),
+    setRulerVisible: (visible, variantKey) => {
+      (setShowRuler(visible), applyRulerVisibility(visible, variantKey));
+    },
   }));
 
   useEffect(() => {
@@ -110,6 +139,10 @@ const ChairModel = forwardRef(function ChairModel(
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     // camera.position.set(0, 1, 3);
     camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
+    // For ScreenSpace
+    cameraRef.current = camera;
+    setCamera(camera);
+    setContainerEl(container);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -279,21 +312,21 @@ const ChairModel = forwardRef(function ChairModel(
 
         // --- Dimensions ---
         // Define positions in lines
-        const offsetWidth104 = new THREE.Vector3(0, 0.0, 0.0);
+        const offsetWidth104 = new THREE.Vector3(0, 0, -0.1);
         const offsetDepth104 = new THREE.Vector3(-0.5, -0.9, 0.4);
-        const offsetHeight104 = new THREE.Vector3(-0.45, -0.45, 0);
+        const offsetHeight104 = new THREE.Vector3(-0.5, -0.5, -0.1);
         const offsetWidth108 = new THREE.Vector3(0.4, 0.9, -0.1);
-        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.4);
-        const offsetHeight108 = new THREE.Vector3(0, 0.45, 0);
+        const offsetDepth108 = new THREE.Vector3(-0.1, 0, 0.35);
+        const offsetHeight108 = new THREE.Vector3(-0.1, 0.4, -0.1);
 
         // --- Model 104 ---
         // Fetch dimension lines in 3D object
         const linjal104 = gltf.scene.getObjectByName("08_Linjal_ES104");
 
         // Create 3 dimension plates & append to scene
-        const plateDepth104 = createDimension("69,5");
-        const plateWidth104 = createDimension("68,3");
-        const plateHeight104 = createDimension("83,7");
+        const plateDepth104 = createDimension("71");
+        const plateWidth104 = createDimension("69");
+        const plateHeight104 = createDimension("89");
 
         plateDepth104.attachTo(linjal104, offsetDepth104);
         plateWidth104.attachTo(linjal104, offsetWidth104);
@@ -308,9 +341,9 @@ const ChairModel = forwardRef(function ChairModel(
         const linjal108 = gltf.scene.getObjectByName("08_Linjal_ES108");
 
         // Create 3 dimension plates & append to scene
-        const plateDepth108 = createDimension("69,1");
-        const plateWidth108 = createDimension("68,3");
-        const plateHeight108 = createDimension("83,7");
+        const plateDepth108 = createDimension("72");
+        const plateWidth108 = createDimension("69");
+        const plateHeight108 = createDimension("88");
 
         plateDepth108.attachTo(linjal108, offsetDepth108);
         plateWidth108.attachTo(linjal108, offsetWidth108);
@@ -337,8 +370,6 @@ const ChairModel = forwardRef(function ChairModel(
         Object.values(dimensionPlatesRef.current)
           .flat()
           .forEach((plate) => (plate.group.visible = false));
-
-        console.log("108 plate pos:", plateDepth108.group.position);
       },
       undefined,
       (error) => {
@@ -401,6 +432,11 @@ const ChairModel = forwardRef(function ChairModel(
       parts.standardCushion.visible = armrestOption === "standard";
       parts.singleCushion.visible = armrestOption === "single";
     }
+
+    // Recalculate bounding-box after each user toggle
+    boundingBoxRef.current = computeVisibleWorldBox(
+      partsRef.current[variant]?.root,
+    );
   }, [variant, armrestOption, loaded]);
 
   // Switches every upholstery mesh, across both variants, to the GLB's
@@ -430,16 +466,25 @@ const ChairModel = forwardRef(function ChairModel(
       return;
     }
 
-    // If ruler is activated - show dimensions for current variant
-    const anyVisible = Object.values(dimensionPlatesRef.current)
-      .flat()
-      .some((plate) => plate.group.visible);
-    applyRulerVisibility(anyVisible, variant);
-  }, [variant]);
+    // // If ruler is activated - show dimensions for current variant
+    applyRulerVisibility(showRuler, variant);
+  }, [variant, showRuler, loaded]);
+
+  // Unit scrren tag - append to the object's screen-bounding-box, allows tag to always follow upper right corner
+  const tagRef = useScreenSpaceTag(camera, containerEl, boundingBoxRef, {
+    x: 12,
+    y: -12,
+  });
 
   return (
     <div className={styles.wrapper}>
-      <article ref={containerRef} className={styles.container} />
+      <article ref={containerRef} className={styles.container}>
+        {showRuler && (
+          <div ref={tagRef} className={styles.unitTag}>
+            [cm]
+          </div>
+        )}
+      </article>
       {!loaded && (
         <div className={styles.loadingOverlay}>
           <img
