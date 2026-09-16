@@ -136,7 +136,6 @@ const ChairModel = forwardRef(function ChairModel(
 
     // Stage camera
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    // camera.position.set(0, 1, 3);
     camera.position.set(0, 1, 1.5); // COULD NEED ADJUSTMENT WHEN PERMANENT OBJECT IS UP
     // For ScreenSpace
     cameraRef.current = camera;
@@ -185,31 +184,6 @@ const ChairModel = forwardRef(function ChairModel(
       (error) => console.error("Failed to load HDRI environment:", error),
     );
 
-    // // --- OrbitControls setup (independent of the model, so set up immediately) ---
-    // const controls = new OrbitControls(camera, renderer.domElement);
-    // controls.enableRotate = false; // user can't rotate object by clicking on canvas
-    // controls.enableZoom = true; // zoom handled by OrbitControls
-    // controls.enablePan = false; // don't let the user pan the object away
-    // controls.minDistance = 0.8; // zoom limit
-    // controls.maxDistance = 2; // zoom limit
-    // controls.target.set(0, 0, 0);
-    // controls.update();
-
-    // // Connect controls to a ref -> enables the hook to control enableRotate
-    // controlsRef.current = controls;
-
-    // // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
-    // const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
-
-    // function updateLight() {
-    //   const rotatedOffset = lightOffset
-    //     .clone()
-    //     .applyQuaternion(camera.quaternion);
-    //   dir.position.copy(camera.position).add(rotatedOffset);
-    //   dir.target.position.copy(controls.target);
-    //   dir.target.updateMatrixWorld();
-    // }
-
     // Loader
     const loader = new GLTFLoader();
     loader.register((parser) => new GLTFMaterialsVariantsExtension(parser));
@@ -234,9 +208,6 @@ const ChairModel = forwardRef(function ChairModel(
         // Re-center vertically
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
-        // camera.position.y += center.y - controls.target.y;
-        // controls.target.y = center.y;
-        // controls.update();
         camera.position.y += center.y - controlsRef.current.target.y;
         controlsRef.current.target.y = center.y;
         controlsRef.current.update();
@@ -356,7 +327,7 @@ const ChairModel = forwardRef(function ChairModel(
       return;
     }
 
-    // // If ruler is activated - show dimensions for current variant
+    // If ruler is activated - show dimensions for current variant
     applyRulerVisibility(showRuler, variant);
   }, [variant, showRuler, loaded]);
 
@@ -389,9 +360,6 @@ const ChairModel = forwardRef(function ChairModel(
 
   //   PresetAngles hook
   usePresetAngles(camera, controlsRef.current, goToPresetRef);
-
-  //   //   Camera control hook
-  //   useCameraControls(camera, renderer, controlsRef, dirRef.current);
 
   return (
     <div className={styles.wrapper}>
