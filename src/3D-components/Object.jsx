@@ -13,6 +13,8 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { createDimension } from "./createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
 import { useScreenSpaceTag } from "./useScreenSpaceTag";
+import styles from "./Object.module.css";
+import loadingIcon from "../assets/loading-icon.gif";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -475,11 +477,10 @@ const ChairModel = forwardRef(function ChairModel(
   });
 
   return (
-    <article
-      ref={containerRef}
-      style={{ width: "100%", height: "100%", position: "relative" }}
-    >
-      {showRuler && (
+
+    <div className={styles.wrapper}>
+      <article ref={containerRef} className={styles.container} style≈{{ position: "relative" }}>
+        {showRuler && (
         <div
           ref={tagRef}
           style={{
@@ -493,8 +494,17 @@ const ChairModel = forwardRef(function ChairModel(
         >
           [cm]
         </div>
+      <article />
+      {!loaded && (
+        <div className={styles.loadingOverlay}>
+          <img
+            src={loadingIcon}
+            alt="Loading model"
+            className={styles.loadingIcon}
+          />
+        </div>
       )}
-    </article>
+    </div>
   );
 });
 
