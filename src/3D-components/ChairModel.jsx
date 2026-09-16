@@ -12,11 +12,14 @@ import { CHAIR_URL } from "../config/models";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { createDimension } from "./helpers/createDimension";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
-import { useScreenSpaceTag } from "./hooks/useScreenSpaceTag";
 import styles from "./Object.module.css";
 import loadingIcon from "../assets/loading-icon.gif";
 import { EXRLoader } from "three/examples/jsm/Addons.js";
 import photoStudio from "../assets/3d_assets/brown_photostudio_02_2k.exr";
+
+// IMPORT HOOKS
+import { useScreenSpaceTag } from "./hooks/useScreenSpaceTag";
+import { useVariantVisibility } from "./hooks/useVariantVisibility";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -432,29 +435,40 @@ const ChairModel = forwardRef(function ChairModel(
   }, []);
 
   // Applies variant/armrest selection to the loaded model. Runs for every variant in CHAIR_PARTS
-  useEffect(() => {
-    if (!loaded) return;
 
-    for (const [variantKey, parts] of Object.entries(partsRef.current)) {
-      const isActiveVariant = variantKey === variant;
-      parts.root.visible = isActiveVariant;
-      if (!isActiveVariant) continue;
+  // ------------------------------------------ START ----------------------------------------------------
+  //   Hook: useVariantVisibility - check!
+  useVariantVisibility(
+    partsRef,
+    variant,
+    armrestOption,
+    loaded,
+    boundingBoxRef,
+  );
+  //   useEffect(() => {
+  //     if (!loaded) return;
 
-      parts.standardArmrest.visible = armrestOption === "standard";
-      parts.singleArmrest.visible = armrestOption === "single";
-      parts.noArmrest.visible = armrestOption === "none";
+  //     for (const [variantKey, parts] of Object.entries(partsRef.current)) {
+  //       const isActiveVariant = variantKey === variant;
+  //       parts.root.visible = isActiveVariant;
+  //       if (!isActiveVariant) continue;
 
-      // Cushion height depends on the armrest variant (see model.md).
-      // No armrest means no armrest cushion either.
-      parts.standardCushion.visible = armrestOption === "standard";
-      parts.singleCushion.visible = armrestOption === "single";
-    }
+  //       parts.standardArmrest.visible = armrestOption === "standard";
+  //       parts.singleArmrest.visible = armrestOption === "single";
+  //       parts.noArmrest.visible = armrestOption === "none";
 
-    // Recalculate bounding-box after each user toggle
-    boundingBoxRef.current = computeVisibleWorldBox(
-      partsRef.current[variant]?.root,
-    );
-  }, [variant, armrestOption, loaded]);
+  //       // Cushion height depends on the armrest variant (see model.md).
+  //       // No armrest means no armrest cushion either.
+  //       parts.standardCushion.visible = armrestOption === "standard";
+  //       parts.singleCushion.visible = armrestOption === "single";
+  //     }
+
+  //     // Recalculate bounding-box after each user toggle
+  //     boundingBoxRef.current = computeVisibleWorldBox(
+  //       partsRef.current[variant]?.root,
+  //     );
+  //   }, [variant, armrestOption, loaded]);
+  // ------------------------------------------ END ----------------------------------------------------
 
   // Switches every upholstery mesh, across both variants, to the GLB's
   // baked-in material variant for the selected material/color (e.g.
