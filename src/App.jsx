@@ -6,10 +6,13 @@ import Slideshow from "./sections/Slideshow";
 
 function App() {
   const [showConfig, setShowConfig] = useState(true);
-  const [variant, setVariant] = useState("ES104");
+  const [ variant, setVariant ] = useState("ES104");
+  const [ armrestOption, setArmrestOption ] = useState("standard");
+  const [ material, setMaterial ] = useState("fabric");
+  const [ color, setColor ] = useState("cream");
   const slideshowRef = useRef(null);
-
-  function scrollToSlideshow() {
+  
+    function scrollToSlideshow() {
     slideshowRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
@@ -19,6 +22,9 @@ function App() {
         <div className={`content ${showConfig ? "" : "content--expanded"}`}>
           <ModelBlock
             variant={variant}
+            armrestOption={armrestOption}
+            material={material}
+            color={color}
             showConfig={showConfig}
             onToggle={() => setShowConfig(!showConfig)}
             onShow2D={scrollToSlideshow}
@@ -28,6 +34,12 @@ function App() {
         <ProductBlock
           variant={variant}
           onVariantChange={setVariant}
+          armrestOption={armrestOption}
+          onArmrestChange={setArmrestOption}
+          material={material}
+          onMaterialChange={setMaterial}
+          color={color}
+          onColorChange={setColor}
           showConfig={showConfig}
           onToggle={() => setShowConfig(!showConfig)}
         />

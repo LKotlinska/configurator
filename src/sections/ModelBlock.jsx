@@ -5,10 +5,14 @@ import ObjectMenu from "../components/ObjectMenu";
 
 export default function ModelBlock({
   variant,
+  armrestOption, 
+  material, 
+  color,
   showConfig,
   onToggle,
   onShow2D,
 }) {
+
   const chairRef = useRef(null);
 
   function handleAngleSelect(key) {
@@ -21,7 +25,7 @@ export default function ModelBlock({
 
   return (
     <section className={styles.modelBlock}>
-      <Chair ref={chairRef} variant={variant} />
+      <Chair ref={chairRef} variant={variant} armrestOption={armrestOption} material={material} color={color}/>
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}

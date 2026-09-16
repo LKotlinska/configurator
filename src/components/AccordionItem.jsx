@@ -5,10 +5,9 @@ export default function AccordionItem({ title, children }) {
         <details className={styles.accordion}>
             <summary className={styles.summary}>
                 <span className={styles.title}>{title}</span>
-                <span aria-hidden='true' className="material-symbols-outlined">stat_minus_1</span>
+                <span aria-hidden='true' className={`material-symbols-outlined ${styles.symbol}`}>expand_more</span>
             </summary>
             <div className={styles.content}>{children}
-                <h2>This is some content</h2>
             </div>
         </details>
     )

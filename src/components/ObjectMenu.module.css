@@ -12,11 +12,11 @@
   height: 3rem;
 }
 
-article img {
+.objectMenu article img {
   height: 3rem;
   cursor: pointer;
 }
 
-article :first-child {
+.objectMenu article :first-child {
   display: inline-block;
 }

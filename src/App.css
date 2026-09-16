@@ -2,6 +2,7 @@ body {
   margin: 0;
   background-color: var(--color-main-bg);
   font-family: var(--font-family-base);
+  font-weight: 450;
 }
 
 h1,

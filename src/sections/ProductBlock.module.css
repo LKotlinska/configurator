@@ -25,7 +25,7 @@
   right: 0;
   width: var(--product-panel-width);
   height: 100%;
-  padding: 5em;
+  padding: 3.5em;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
@@ -57,6 +57,10 @@
   text-transform: uppercase;
 }
 
+.description {
+  font-size: 1.1em;
+}
+
 .linkContainer {
   display: flex;
   flex-direction: column;
@@ -65,6 +69,7 @@
 .modelTitle {
   font-size: var(--font-size-3xl);
   margin: 0.2em 0;
+  font-weight: 500;
 }
 
 .priceTag {
