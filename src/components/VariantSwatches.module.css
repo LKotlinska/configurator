@@ -40,6 +40,10 @@
   text-align: center;
 }
 
+.variantPrice {
+  color: #666;
+}
+
 .variantInput:checked + .imageSwatch .variantImg {
   border-color: #333;
 }

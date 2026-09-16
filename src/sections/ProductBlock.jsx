@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import AccordionItem from "../components/AccordionItem";
 import Button from "../components/Button";
 import Link from "../components/Link";
@@ -15,6 +16,7 @@ import materialFabric from "../assets/previews/materials/fabric.webp";
 import materialLeather from "../assets/previews/materials/leather.webp";
 import materialVelvet from "../assets/previews/materials/velvet.webp";
 import { MATERIALS, COLORS, COLOR_LABELS, COLOR_SWATCHES } from "../config/materials";
+import { BASE_PRICE, VARIANT_PRICES, ARMREST_PRICES, MATERIAL_PRICES, formatPrice } from "../config/pricing";
 
 const MATERIAL_PREVIEWS = {
     fabric: materialFabric,
@@ -23,20 +25,20 @@ const MATERIAL_PREVIEWS = {
 };
 
 const FOOT_OPTIONS = [
-    { id: "model-104", value: "ES104", label: "ES104", image: wheels104 },
-    { id: "model-108", value: "ES108", label: "ES108", image: base108 },
+    { id: "model-104", value: "ES104", label: "ES104", image: wheels104, priceDelta: VARIANT_PRICES.ES104 },
+    { id: "model-108", value: "ES108", label: "ES108", image: base108, priceDelta: VARIANT_PRICES.ES108 },
 ];
 
 const ARMREST_OPTIONS_BY_VARIANT = {
     ES104: [
-        { id: "armrest-standard", value: "standard", label: "Standard", image: armrestStandard104 },
-        { id: "armrest-single", value: "single", label: "Single", image: armrestSingle104 },
-        { id: "armrest-none", value: "none", label: "None", image: armrestNone104 },
+        { id: "armrest-standard", value: "standard", label: "Standard", image: armrestStandard104, priceDelta: ARMREST_PRICES.standard },
+        { id: "armrest-single", value: "single", label: "Single", image: armrestSingle104, priceDelta: ARMREST_PRICES.single },
+        { id: "armrest-none", value: "none", label: "None", image: armrestNone104, priceDelta: ARMREST_PRICES.none },
     ],
     ES108: [
-        { id: "armrest-standard", value: "standard", label: "Standard", image: armrestStandard108 },
-        { id: "armrest-single", value: "single", label: "Single", image: armrestSingle108 },
-        { id: "armrest-none", value: "none", label: "None", image: armrestNone108 },
+        { id: "armrest-standard", value: "standard", label: "Standard", image: armrestStandard108, priceDelta: ARMREST_PRICES.standard },
+        { id: "armrest-single", value: "single", label: "Single", image: armrestSingle108, priceDelta: ARMREST_PRICES.single },
+        { id: "armrest-none", value: "none", label: "None", image: armrestNone108, priceDelta: ARMREST_PRICES.none },
     ],
 };
 
@@ -45,6 +47,7 @@ const MATERIAL_OPTIONS = MATERIALS.map((name) => ({
     value: name,
     label: name.charAt(0).toUpperCase() + name.slice(1),
     image: MATERIAL_PREVIEWS[name],
+    priceDelta: MATERIAL_PRICES[name],
 }));
 
 const colorOptionsForMaterial = (material) =>
@@ -62,6 +65,11 @@ export default function ProductBlock({
     color, onColorChange,
     showConfig, onToggle,
 }) {
+    const totalPrice = useMemo(
+        () => BASE_PRICE + VARIANT_PRICES[variant] + ARMREST_PRICES[armrestOption] + MATERIAL_PRICES[material],
+        [variant, armrestOption, material]
+    );
+
     return(
         <section className={`${styles.productSection} ${!showConfig ? styles.collapsed : ""}`}>
             <span className={styles.triggerContainer} onClick={onToggle}>
@@ -75,7 +83,7 @@ export default function ProductBlock({
                     <span className={styles.caption}>Configurator</span>
                     <h2 className={styles.modelTitle}>Meridian Chair</h2>
                     <p className={styles.description}>Clean lines and a balanced silhouette make the Meridian equally at home in the boardroom or the home office. A sculpted frame and supportive seat keep you comfortable through long working days, while a smooth-rolling base or a sturdy fixed foot make it easy to move between meetings or settle in for focused work. Choose your base, armrests, and upholstery to match the room.</p>
-                    <span className={styles.priceTag}>2 799 £</span>
+                    <span className={styles.priceTag}>{formatPrice(totalPrice)}</span>
 
                     <AccordionItem 
                         title="Foot"
