@@ -480,17 +480,7 @@ const ChairModel = forwardRef(function ChairModel(
     <div className={styles.wrapper}>
       <article ref={containerRef} className={styles.container}>
         {showRuler && (
-          <div
-            ref={tagRef}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              pointerEvents: "none",
-              color: "#383737",
-              fontSize: "20px",
-            }}
-          >
+          <div ref={tagRef} className={styles.unitTag}>
             [cm]
           </div>
         )}
