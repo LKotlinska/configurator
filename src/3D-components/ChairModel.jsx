@@ -23,6 +23,7 @@ import { useVariantVisibility } from "./hooks/useVariantVisibility";
 import { useMaterialVariant } from "./hooks/useMaterialVariant";
 import { useBoundingBox } from "./hooks/useBoundingBox";
 import { useRaycastInteraction } from "./hooks/useRaycastInteraction";
+import { usePresetAngles } from "./hooks/usePresetAngles";
 
 // Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
 const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
@@ -183,37 +184,8 @@ const ChairModel = forwardRef(function ChairModel(
     controls.target.set(0, 0, 0);
     controls.update();
 
-    // Koppla controls till en ref så hooken kan styra enableRotate
+    // Connect controls to a ref -> enables the hook to control enableRotate
     controlsRef.current = controls;
-
-    // --- Preset angles ---
-    const presets = {
-      angle1: new THREE.Vector3(-1.2, 1.5, 1.2),
-      angle2: new THREE.Vector3(0, 1.5, 0.8),
-      angle3: new THREE.Vector3(1.2, 1.5, 1.2),
-    };
-
-    function goToPreset(pos, animated = true) {
-      if (!animated) {
-        camera.position.copy(pos);
-        controls.update();
-        return;
-      }
-      const start = camera.position.clone();
-      const startTime = performance.now();
-      const duration = 500;
-
-      function step(now) {
-        const t = Math.min((now - startTime) / duration, 1);
-        camera.position.lerpVectors(start, pos, t);
-        controls.update();
-        if (t < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    // Expose so an outer menu component can call
-    goToPresetRef.current = (key) => goToPreset(presets[key]);
 
     // --- Offset light: follows the camera but not coaxially, to avoid a flat look ---
     const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
@@ -379,6 +351,9 @@ const ChairModel = forwardRef(function ChairModel(
 
   // RaycastInteraction hook - "user must click the object to rotate"
   useRaycastInteraction(camera && renderer, camera, modelRef, controlsRef);
+
+  //   PresetAngles hook
+  usePresetAngles(camera, controlsRef.current, goToPresetRef);
 
   useEffect(() => {
     // Guard
