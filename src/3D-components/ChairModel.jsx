@@ -26,32 +26,8 @@ import { useDimensions } from "./hooks/useDimensions";
 import { useAnimationLoop } from "./hooks/useAnimationLoop";
 import { useResizeObserver } from "./hooks/useResizeObserver";
 
-// Meshes that carry the upholstery material, keyed the same as CHAIR_PARTS.
-const UPHOLSTERY_PARTS = ["body", "standardCushion", "singleCushion"];
-
-// Object names as they exist in chair.glb, keyed by variant (see model description).
-const CHAIR_PARTS = {
-  ES104: {
-    root: "Chair_ES104_Root",
-    base: "01_Base_metal_W_wheels_ES104",
-    standardArmrest: "02_Armrest_Metal_ES104",
-    singleArmrest: "03_Singel_Armrest_ES104",
-    noArmrest: "04_Singel_NOarmrest_ES104",
-    body: "05_Body_ES104",
-    standardCushion: "06_Metal_Cushion_ES104",
-    singleCushion: "07_Singel_Cushion_ES104",
-  },
-  ES108: {
-    root: "Chair_ES108_Root",
-    base: "01_Base_metal_ES108",
-    standardArmrest: "02_Armrest_Metal_ES108",
-    singleArmrest: "03_Singel_Armrest_ES108",
-    noArmrest: "04_Singel_NOarmrest_ES108",
-    body: "05_Body_ES108",
-    standardCushion: "06_Metal_Cushion_ES108",
-    singleCushion: "07_Singel_Cushion_ES108",
-  },
-};
+// Helper
+import { UPHOLSTERY_PARTS, CHAIR_PARTS } from "./helpers/chair-config";
 
 const ChairModel = forwardRef(function ChairModel(
   { variant, armrestOption = "standard", material = "fabric", color = "cream" },
@@ -222,7 +198,7 @@ const ChairModel = forwardRef(function ChairModel(
   // RaycastInteraction hook - "user must click the object to rotate"
   useRaycastInteraction(camera && renderer, camera, modelRef, controlsRef);
 
-  //   PresetAngles hook
+  // PresetAngles hook
   usePresetAngles(camera, controlsRef.current, goToPresetRef);
 
   return (
