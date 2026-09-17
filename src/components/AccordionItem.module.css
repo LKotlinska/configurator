@@ -7,7 +7,9 @@
 .accordion::details-content {
   height: 0;
   overflow: clip;
-  transition: height 0.3s ease, content-visibility 0.3s allow-discrete;
+  transition:
+    height 0.3s ease,
+    content-visibility 0.3s allow-discrete;
 }
 
 .accordion[open]::details-content {
@@ -29,7 +31,8 @@
 }
 
 .title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
+  font-family: var(--font-family-heading);
   font-weight: 700;
 }
 

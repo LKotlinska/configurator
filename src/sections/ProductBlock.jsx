@@ -83,7 +83,9 @@ export default function ProductBlock({
                     <span className={styles.caption}>Configurator</span>
                     <h2 className={styles.modelTitle}>Meridian Chair</h2>
                     <p className={styles.description}>Clean lines and a balanced silhouette make the Meridian equally at home in the boardroom or the home office. A sculpted frame and supportive seat keep you comfortable through long working days, while a smooth-rolling base or a sturdy fixed foot make it easy to move between meetings or settle in for focused work. Choose your base, armrests, and upholstery to match the room.</p>
-                    <span className={styles.priceTag}>{formatPrice(totalPrice)}</span>
+                    <span className={styles.priceTag}>
+                        <span className={styles.priceNumber}>{formatPrice(totalPrice).replace(" £", "")} £</span>
+                    </span>
 
                     <AccordionItem 
                         title="Foot"

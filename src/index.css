@@ -2,10 +2,10 @@
   --color-main-bg: #ffffff;
   --color-button: #2d2f22;
   --color-preview: #fbf9f3;
-  --color-font-base: #000000;
-  --color-font-heading: #000000;
+  --color-font-base: #2d2f22;
+  --color-font-heading: #2d2f22;
 
-  --font-family-base: "Cormorant", serif;
+  --font-family-base: "Rethink Sans", sans-serif;
   --font-family-heading: "Cormorant", serif;
 
   --font-size-xs: 0.6em;
