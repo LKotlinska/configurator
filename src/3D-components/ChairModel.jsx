@@ -9,7 +9,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { CHAIR_URL } from "../config/models";
 import GLTFMaterialsVariantsExtension from "three-gltf-extensions/loaders/KHR_materials_variants/KHR_materials_variants.js";
-import styles from "./Object.module.css";
+import styles from "./ChairModel.module.css";
 import loadingIcon from "../assets/loading-icon.gif";
 import photoStudio from "../assets/3d_assets/brown_photostudio_02_2k.exr";
 
