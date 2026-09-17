@@ -25,12 +25,10 @@
   height: 40px;
   border: none;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
 }
 
 .leftArrow {
