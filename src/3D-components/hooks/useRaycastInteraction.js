@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
+// Raycasting: User must click the object to rotate
 export function useRaycastInteraction(renderer, camera, modelRef, controlsRef) {
   const raycaster = useRef(new THREE.Raycaster());
   const pointerNDC = useRef(new THREE.Vector2());
