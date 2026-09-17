@@ -17,7 +17,7 @@
 }
 
 .summary {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #8a8e75;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,7 +31,7 @@
 }
 
 .title {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-lg);
   font-family: var(--font-family-heading);
   font-weight: 700;
 }

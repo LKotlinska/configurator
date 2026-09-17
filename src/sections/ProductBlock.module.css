@@ -55,17 +55,20 @@
 
 .caption {
   text-transform: uppercase;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-sm);
 }
 
 .linkContainer {
   display: flex;
   flex-direction: column;
+  margin-top: 1em;
 }
 
 .modelTitle {
   font-size: var(--font-size-3xl);
   margin: 0.2em 0;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .priceTag {
@@ -74,6 +77,7 @@
 
 .priceNumber {
   font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
@@ -86,6 +90,10 @@
   display: flex;
   margin: 1.5em 0 0.5em;
   font-family: var(--font-family-heading);
+}
+
+.status {
+  font-size: var(--font-size-sm);
 }
 
 /* -- Separators for status */
