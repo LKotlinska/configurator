@@ -37,11 +37,21 @@
 }
 
 .variantCaption {
-  text-align: center;
+  align-self: stretch;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  text-align: left;
 }
 
 .variantPrice {
-  color: #666;
+  align-self: stretch;
+  text-align: left;
+}
+
+.variantPriceNumber {
+  font-family: var(--font-family-base);
+  font-weight: 600;
 }
 
 .variantInput:checked + .imageSwatch .variantImg {
@@ -54,9 +64,8 @@
   height: 6em;
   cursor: pointer;
   border: 2px solid transparent;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 .variantInput:checked + .imageSwatch .colorSwatch {
-  border-color: #333;
+  border-color: var(--color-font-base);
 }

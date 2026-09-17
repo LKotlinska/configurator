@@ -55,31 +55,45 @@
 
 .caption {
   text-transform: uppercase;
-}
-
-.description {
-  font-size: 1.1em;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-sm);
 }
 
 .linkContainer {
   display: flex;
   flex-direction: column;
+  margin-top: 1em;
 }
 
 .modelTitle {
   font-size: var(--font-size-3xl);
   margin: 0.2em 0;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .priceTag {
-  font-weight: 700;
-  font-size: var(--font-size-xl);
+  font-size: 1.4em;
+}
+
+.priceNumber {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.priceText {
+  font-family: var(--font-family-heading);
+  font-weight: 400;
 }
 
 .statusContainer {
   display: flex;
   margin: 1.5em 0 0.5em;
+  font-family: var(--font-family-heading);
+}
+
+.status {
+  font-size: var(--font-size-sm);
 }
 
 /* -- Separators for status */

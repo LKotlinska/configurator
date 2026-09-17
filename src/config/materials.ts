@@ -7,8 +7,8 @@ export const COLORS = ["cream", "earth", "green"];
 
 // Display name shown to the user for each internal color value.
 export const COLOR_LABELS = {
-  cream: "Cream",
-  earth: "Expresso",
+  cream: "Sand",
+  earth: "Espresso",
   green: "Sage",
 };
 
