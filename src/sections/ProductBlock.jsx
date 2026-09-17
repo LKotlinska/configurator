@@ -12,16 +12,22 @@ import armrestNone104 from "../assets/previews/armrest_104/04_Singel_NOarmrest_E
 import armrestStandard108 from "../assets/previews/armrest_108/02_Armrest_Metal_ES108.png";
 import armrestSingle108 from "../assets/previews/armrest_108/03_Singel_Armrest_ES108.png";
 import armrestNone108 from "../assets/previews/armrest_108/04_Singel_NOarmrest_ES108.png";
-import materialFabric from "../assets/previews/materials/fabric.webp";
-import materialLeather from "../assets/previews/materials/leather.webp";
-import materialVelvet from "../assets/previews/materials/velvet.webp";
+import fabricCream from "../assets/previews/textures/fabric_cream.webp";
+import fabricEarth from "../assets/previews/textures/fabric_earth.webp";
+import fabricGreen from "../assets/previews/textures/fabric_green.webp";
+import leatherCream from "../assets/previews/textures/leather_cream.webp";
+import leatherEarth from "../assets/previews/textures/leather_earth.webp";
+import leatherGreen from "../assets/previews/textures/leather_green.webp";
+import velvetCream from "../assets/previews/textures/velvet_cream.webp";
+import velvetEarth from "../assets/previews/textures/velvet_earth.webp";
+import velvetGreen from "../assets/previews/textures/velvet_green.webp";
 import { MATERIALS, COLORS, COLOR_LABELS, COLOR_SWATCHES } from "../config/materials";
 import { BASE_PRICE, VARIANT_PRICES, ARMREST_PRICES, MATERIAL_PRICES, formatPrice } from "../config/pricing";
 
 const MATERIAL_PREVIEWS = {
-    fabric: materialFabric,
-    leather: materialLeather,
-    velvet: materialVelvet,
+    fabric: { cream: fabricCream, earth: fabricEarth, green: fabricGreen },
+    leather: { cream: leatherCream, earth: leatherEarth, green: leatherGreen },
+    velvet: { cream: velvetCream, earth: velvetEarth, green: velvetGreen },
 };
 
 const FOOT_OPTIONS = [
@@ -42,13 +48,14 @@ const ARMREST_OPTIONS_BY_VARIANT = {
     ],
 };
 
-const MATERIAL_OPTIONS = MATERIALS.map((name) => ({
-    id: `material-${name}`,
-    value: name,
-    label: name.charAt(0).toUpperCase() + name.slice(1),
-    image: MATERIAL_PREVIEWS[name],
-    priceDelta: MATERIAL_PRICES[name],
-}));
+const materialOptionsForColor = (color) =>
+    MATERIALS.map((name) => ({
+        id: `material-${name}`,
+        value: name,
+        label: name.charAt(0).toUpperCase() + name.slice(1),
+        image: MATERIAL_PREVIEWS[name][color],
+        priceDelta: MATERIAL_PRICES[name],
+    }));
 
 const colorOptionsForMaterial = (material) =>
     COLORS.map((name) => ({
@@ -83,7 +90,9 @@ export default function ProductBlock({
                     <span className={styles.caption}>Configurator</span>
                     <h2 className={styles.modelTitle}>Meridian Chair</h2>
                     <p className={styles.description}>Clean lines and a balanced silhouette make the Meridian equally at home in the boardroom or the home office. A sculpted frame and supportive seat keep you comfortable through long working days, while a smooth-rolling base or a sturdy fixed foot make it easy to move between meetings or settle in for focused work. Choose your base, armrests, and upholstery to match the room.</p>
-                    <span className={styles.priceTag}>{formatPrice(totalPrice)}</span>
+                    <span className={styles.priceTag}>
+                        <span className={styles.priceNumber}>{formatPrice(totalPrice).replace(" £", "")} £</span>
+                    </span>
 
                     <AccordionItem 
                         title="Foot"
@@ -112,7 +121,7 @@ export default function ProductBlock({
                         children={
                             <VariantSwatches
                                 name={"material-variant"}
-                                options={MATERIAL_OPTIONS}
+                                options={materialOptionsForColor(color)}
                                 selected={material}
                                 onChange={onMaterialChange}
                                 captioned

@@ -6,6 +6,8 @@ export default function VariantSwatches({ name, options = [], selected, onChange
         <div>
             {options.map(({ id, value, label, image, color, priceDelta }) => {
                 const hasPrice = priceDelta !== undefined;
+                const priceLabel = hasPrice ? formatPriceDelta(priceDelta) : null;
+                const isIncluded = priceLabel === "Included";
                 return (
                     <label key={id} htmlFor={id}>
                         <input
@@ -29,8 +31,18 @@ export default function VariantSwatches({ name, options = [], selected, onChange
                             captioned || hasPrice ? (
                                 <span className={styles.imageSwatch}>
                                     <img className={styles.variantImg} src={image} alt={label ?? value} />
-                                    {captioned && <span className={styles.variantCaption}>{label ?? value}</span>}
-                                    {hasPrice && <span className={styles.variantPrice}>{formatPriceDelta(priceDelta)}</span>}
+                                    {captioned && <span className={styles.variantCaption}>{label}</span>}
+                                    {hasPrice && (
+                                        <span className={styles.variantPrice}>
+                                            {isIncluded ? (
+                                                <span className={styles.variantPriceText}>{priceLabel}</span>
+                                            ) : (
+                                                <>
+                                                    <span className={styles.variantPriceNumber}>{priceLabel.replace(" £", "")} £</span>
+                                                </>
+                                            )}
+                                        </span>
+                                    )}
                                 </span>
                             ) : (
                                 <img className={styles.variantImg} src={image} alt={label ?? value} />
