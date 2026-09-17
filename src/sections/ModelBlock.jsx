@@ -1,18 +1,17 @@
 import { useRef } from "react";
 import styles from "./ModelBlock.module.css";
-import Chair from "../3D-components/Object";
+import ChairModel from "../3D-components/ChairModel";
 import ObjectMenu from "../components/ObjectMenu";
 
 export default function ModelBlock({
   variant,
-  armrestOption, 
-  material, 
+  armrestOption,
+  material,
   color,
   showConfig,
   onToggle,
   onShow2D,
 }) {
-
   const chairRef = useRef(null);
 
   function handleAngleSelect(key) {
@@ -25,7 +24,13 @@ export default function ModelBlock({
 
   return (
     <section className={styles.modelBlock}>
-      <Chair ref={chairRef} variant={variant} armrestOption={armrestOption} material={material} color={color}/>
+      <ChairModel
+        ref={chairRef}
+        variant={variant}
+        armrestOption={armrestOption}
+        material={material}
+        color={color}
+      />
       <img src="/rotationIcon.png" className={styles.rotationIcon} />
       <ObjectMenu
         onAngleSelect={handleAngleSelect}

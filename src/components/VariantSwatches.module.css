@@ -27,3 +27,36 @@
 .variantInput:checked + .variantLabel {
   border-color: #333;
 }
+
+.imageSwatch {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+  cursor: pointer;
+}
+
+.variantCaption {
+  text-align: center;
+}
+
+.variantPrice {
+  color: #666;
+}
+
+.variantInput:checked + .imageSwatch .variantImg {
+  border-color: #333;
+}
+
+.colorSwatch {
+  display: inline-block;
+  width: 6em;
+  height: 6em;
+  cursor: pointer;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.variantInput:checked + .imageSwatch .colorSwatch {
+  border-color: #333;
+}
