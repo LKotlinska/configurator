@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+// Applies variant/armrest selection to the loaded model. Runs for every variant in CHIAR_PARTS
 export function useVariantVisibility(partsRef, variant, armrestOption, loaded) {
   useEffect(() => {
     if (!loaded) return;
@@ -16,7 +17,8 @@ export function useVariantVisibility(partsRef, variant, armrestOption, loaded) {
       parts.singleArmrest.visible = armrestOption === "single";
       parts.noArmrest.visible = armrestOption === "none";
 
-      // Cushions follow armrest type
+      // Cushion height depends on the armrest variant (see model.md).
+      // No armrest means no armrest cushion either.
       parts.standardCushion.visible = armrestOption === "standard";
       parts.singleCushion.visible = armrestOption === "single";
     }

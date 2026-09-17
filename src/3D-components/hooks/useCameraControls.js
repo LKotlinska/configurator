@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as THREE from "three";
 
+// OrbitControls setup
 export function useCameraControls(camera, renderer, controlsRef, dir) {
   const updateLightRef = useRef(() => {});
 
@@ -14,13 +15,14 @@ export function useCameraControls(camera, renderer, controlsRef, dir) {
     controls.enableZoom = true; // zoom handled by OrbitControls
     controls.enablePan = false; // don't let the user pan the object away
 
-    // Restore zoom limits
+    // Zoom limits
     controls.minDistance = 0.8;
     controls.maxDistance = 2;
 
     controls.target.set(0, 0, 0);
     controls.update();
 
+    // Offset light: follows the camera but not coaxially, to avoid a flat look
     const lightOffset = new THREE.Vector3(1.5, 1, 0.5);
 
     function updateLight() {
