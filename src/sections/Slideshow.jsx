@@ -3,16 +3,12 @@ import styles from "./Slideshow.module.css";
 import Navigator from "../components/Navigator";
 
 const images = [
-  "./environment/01chair.png",
   "./environment/02chair.png",
   "./environment/03chair.png",
-  "./environment/04chair.png",
   "./environment/05chair.png",
   "./environment/06chair.png",
   "./environment/07chair.png",
   "./environment/08chair.png",
-  "./environment/09chair.png",
-  "./environment/010chair.png",
 ];
 
 const Slideshow = forwardRef(function Slideshow({ showConfig }, ref) {
