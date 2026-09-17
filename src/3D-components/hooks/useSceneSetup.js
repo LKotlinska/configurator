@@ -58,7 +58,7 @@ export function useSceneSetup(containerRef, photoStudio) {
 
     // Lightning
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const dir = new THREE.DirectionalLight(0xffffff, 0);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.5);
     scene.add(dir);
     scene.add(dir.target);
     dirRef.current = dir; // For useCameraControl hook
