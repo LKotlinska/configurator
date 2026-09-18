@@ -56,7 +56,7 @@ https://configurator-pi-rouge.vercel.app/
 
 - `src/components/` - reusable UI (accordion, swatches, buttons etc.)
 - `src/sections/` - page-level blocks composed in App.jsx
-  ...
+- `src/3D-components/` - 3D model with hooks and helpers in subfolders
 
 ## License
 
